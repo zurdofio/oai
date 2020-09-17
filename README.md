@@ -30,7 +30,7 @@ file at the root of this repository.
 
 # Collaborative work
 
-This source code is managed through a GITLAB server, a collaborative development platform:
+This source code is managed through a GITLAB server, a collaborative development platform.
 
 Process is explained in [CONTRIBUTING](CONTRIBUTING.md) file.
 
