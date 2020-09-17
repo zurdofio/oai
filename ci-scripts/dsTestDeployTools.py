@@ -29,10 +29,14 @@ import time
 CICD_PRIVATE_NETWORK_RANGE='192.168.28.0/26'
 CICD_PUBLIC_NETWORK_RANGE='192.168.61.192/26'
 
+CICD_MYSQL_PUBLIC_ADDR='192.168.61.194'
+CICD_AMF_PUBLIC_ADDR='192.168.61.195'
+
 class deployForDsTester():
     def __init__(self):
         self.action = 'None'
         self.tag = ''
+        self.mySqlPassword = ''
 
     def createNetworks(self):
         # first check if already up?
@@ -52,6 +56,42 @@ class deployForDsTester():
         except:
             pass
 
+    def deployMySqlServer(self):
+        # first check if already up? If yes, remove everything.
+        try:
+            res = subprocess.check_output('docker ps -a | grep -c "cicd-mysql-svr"', shell=True, universal_newlines=True)
+            if int(str(res.strip())) > 0:
+                self.removeAllContainers()
+        except:
+            pass
+
+        subprocess_run_w_echo('docker run --name cicd-mysql-svr --network cicd-oai-public-net --ip ' + CICD_MYSQL_PUBLIC_ADDR + ' -d -e MYSQL_ROOT_PASSWORD=secretPassword mysql/mysql-server:5.7')
+        # TEMPORARY: TODO --> when repos public, use component strategy
+        subprocess_run_w_echo('docker cp ci-scripts/temp/oai_db.sql cicd-mysql-svr:/home')
+        subprocess_run_w_echo('sed -e "s@CICD_AMF_PUBLIC_ADDR@' + CICD_AMF_PUBLIC_ADDR + '@" ci-scripts/mysql-script.cmd > ci-scripts/mysql-complete.cmd')
+        subprocess_run_w_echo('docker cp ci-scripts/mysql-complete.cmd cicd-mysql-svr:/home')
+        # waiting for the service to be properly started
+        time.sleep(5)
+        doLoop = True
+        while doLoop:
+            try:
+                res = subprocess.check_output('docker logs cicd-mysql-svr 2>&1', shell=True, universal_newlines=True)
+                startMessageFound = re.search('Starting MySQL', str(res))
+                if startMessageFound is not None:
+                    doLoop = False
+            except:
+                time.sleep(2)
+                pass
+        time.sleep(2)
+        subprocess_run_w_echo('docker exec -it cicd-mysql-svr /bin/bash -c "mysql -uroot -psecretPassword < /home/mysql-complete.cmd"')
+
+    def removeAllContainers(self):
+        try:
+            subprocess_run_w_echo('docker rm -f cicd-mysql-svr')
+        except:
+            pass
+
+
 def subprocess_run_w_echo(cmd):
     print(cmd)
     subprocess.run(cmd, shell=True)
@@ -70,6 +110,8 @@ def Usage():
     print('------------------------------------------------------------------------------------------------- Actions Syntax -----')
     print('python3 dsTestDeployTools.py --action=CreateNetworks')
     print('python3 dsTestDeployTools.py --action=RemoveNetworks')
+    print('python3 dsTestDeployTools.py --action=DeployMySqlServer')
+    print('python3 dsTestDeployTools.py --action=RemoveAllContainers')
 
 #--------------------------------------------------------------------------------------------------------
 #
@@ -91,7 +133,9 @@ while len(argvs) > 1:
         matchReg = re.match('^\-\-action=(.+)$', myArgv, re.IGNORECASE)
         action = matchReg.group(1)
         if action != 'CreateNetworks' and \
-           action != 'RemoveNetworks':
+           action != 'RemoveNetworks' and \
+           action != 'DeployMySqlServer' and \
+           action != 'RemoveAllContainers':
             print('Unsupported Action => ' + action)
             Usage()
             sys.exit(-1)
@@ -104,7 +148,10 @@ if DFDT.action == 'CreateNetworks':
     DFDT.createNetworks()
 elif DFDT.action == 'RemoveNetworks':
     DFDT.removeNetworks()
-
+elif DFDT.action == 'DeployMySqlServer':
+    DFDT.deployMySqlServer()
+elif DFDT.action == 'RemoveAllContainers':
+    DFDT.removeAllContainers()
 
 sys.exit(0)
 
