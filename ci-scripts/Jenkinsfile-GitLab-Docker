@@ -172,7 +172,10 @@ pipeline {
         stage ('Deploy Containers') {
           steps {
             script {
-              sh "sleep 10"
+              // Deploy and configure MySQL Server
+              myShCmd('python3 ./ci-scripts/dsTestDeployTools.py --action=DeployMySqlServer', new_host_flag, new_host_user, new_host)
+              // Deploy and configure AMF
+              myShCmd('python3 ./ci-scripts/dsTestDeployTools.py --action=DeployAMF --tag=' + amfTag, new_host_flag, new_host_user, new_host)
             }
           }
         }
@@ -194,8 +197,7 @@ pipeline {
           steps {
             script {
               // Remove the containers
-              //myShCmd('python3 ./ci-scripts/dsTestDeployTools.py --action=RemoveAllContainers', new_host_flag, new_host_user, new_host)
-              sh "sleep 10"
+              myShCmd('python3 ./ci-scripts/dsTestDeployTools.py --action=RemoveAllContainers', new_host_flag, new_host_user, new_host)
             }
           }
         }

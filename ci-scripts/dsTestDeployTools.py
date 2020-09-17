@@ -31,6 +31,8 @@ CICD_PUBLIC_NETWORK_RANGE='192.168.61.192/26'
 
 CICD_MYSQL_PUBLIC_ADDR='192.168.61.194'
 CICD_AMF_PUBLIC_ADDR='192.168.61.195'
+CICD_SMF_PUBLIC_ADDR='192.168.61.196'
+CICD_DUMMY_SMF_PUBLIC_ADDR='192.168.61.200'
 
 class deployForDsTester():
     def __init__(self):
@@ -85,6 +87,24 @@ class deployForDsTester():
         time.sleep(2)
         subprocess_run_w_echo('docker exec -it cicd-mysql-svr /bin/bash -c "mysql -uroot -psecretPassword < /home/mysql-complete.cmd"')
 
+    def deployAMF(self):
+        res = ''
+        # first check if tag exists
+        try:
+            res = subprocess.check_output('docker image inspect oai-amf:' + self.tag, shell=True, universal_newlines=True)
+        except:
+            sys.exit(-1)
+
+        # check if there is an entrypoint
+        entrypoint = re.search('entrypoint', str(res))
+        if entrypoint is not None:
+            print('not supported yet')
+        else:
+            subprocess_run_w_echo('docker run --privileged --name cicd-oai-amf --network cicd-oai-public-net --ip ' + CICD_AMF_PUBLIC_ADDR + ' -d oai-amf:' + self.tag + ' /bin/bash -c "sleep infinity"')
+        subprocess_run_w_echo('sed -e "s@CI_NGAP_IF_NAME@eth0@" -e "s@CI_N11_IF_NAME@eth0@" -e "s@CI_SMF0_IP_ADDRESS@' + CICD_SMF_PUBLIC_ADDR + '@" -e "s@CI_SMF1_IP_ADDRESS@' + CICD_DUMMY_SMF_PUBLIC_ADDR + '@" -e "s@CI_MYSQL_IP_ADDRESS@' + CICD_MYSQL_PUBLIC_ADDR + '@" ci-scripts/temp/generate_amf_conf.sh > ci-scripts/temp/ci-generate_amf_conf.sh')
+        subprocess_run_w_echo('docker cp ci-scripts/temp/ci-generate_amf_conf.sh cicd-oai-amf:/openair-amf/generate_amf_conf.sh')
+        subprocess_run_w_echo('docker exec -it cicd-oai-amf /bin/bash -c "chmod 755 generate_amf_conf.sh && ./generate_amf_conf.sh" > archives/amf_config.log')
+
     def removeAllContainers(self):
         try:
             subprocess_run_w_echo('docker rm -f cicd-mysql-svr')
@@ -111,6 +131,7 @@ def Usage():
     print('python3 dsTestDeployTools.py --action=CreateNetworks')
     print('python3 dsTestDeployTools.py --action=RemoveNetworks')
     print('python3 dsTestDeployTools.py --action=DeployMySqlServer')
+    print('python3 dsTestDeployTools.py --action=DeployAMF --tag=[tag]')
     print('python3 dsTestDeployTools.py --action=RemoveAllContainers')
 
 #--------------------------------------------------------------------------------------------------------
@@ -135,6 +156,7 @@ while len(argvs) > 1:
         if action != 'CreateNetworks' and \
            action != 'RemoveNetworks' and \
            action != 'DeployMySqlServer' and \
+           action != 'DeployAMF' and \
            action != 'RemoveAllContainers':
             print('Unsupported Action => ' + action)
             Usage()
@@ -150,6 +172,12 @@ elif DFDT.action == 'RemoveNetworks':
     DFDT.removeNetworks()
 elif DFDT.action == 'DeployMySqlServer':
     DFDT.deployMySqlServer()
+elif DFDT.action == 'DeployAMF':
+    if DFDT.tag == '':
+        print('Missing OAI-AMF image tag')
+        Usage()
+        sys.exit(-1)
+    DFDT.deployAMF()
 elif DFDT.action == 'RemoveAllContainers':
     DFDT.removeAllContainers()
 
