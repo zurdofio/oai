@@ -265,9 +265,9 @@ def copyTo2ndServer(filename, flag, user, host) {
     }
     sh "scp ${filename} ${user}@${host}:/tmp/CI-CN5G-FED"
     if ("oai-cn5g-fed.zip".equals(filename)) {
-      sh "ssh ${user}@${host} 'unzip oai-cn5g-fed.zip && rm oai-cn5g-fed.zip'"
-      sh "ssh ${user}@${host} 'git checkout -f ${GIT_COMMIT}'"
-      sh "ssh ${user}@${host} 'git log -n1'"
+      sh "ssh ${user}@${host} 'cd /tmp/CI-CN5G-FED && unzip oai-cn5g-fed.zip && rm oai-cn5g-fed.zip'"
+      sh "ssh ${user}@${host} 'cd /tmp/CI-CN5G-FED && git checkout -f ${GIT_COMMIT}'"
+      sh "ssh ${user}@${host} 'cd /tmp/CI-CN5G-FED && git log -n1'"
     }
   }
 }
