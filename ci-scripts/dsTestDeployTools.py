@@ -32,6 +32,7 @@ CICD_PUBLIC_NETWORK_RANGE='192.168.61.192/26'
 CICD_MYSQL_PUBLIC_ADDR='192.168.61.194'
 CICD_AMF_PUBLIC_ADDR='192.168.61.195'
 CICD_SMF_PUBLIC_ADDR='192.168.61.196'
+CICD_UPF_PUBLIC_ADDR='192.168.61.197'
 CICD_DUMMY_SMF_PUBLIC_ADDR='192.168.61.200'
 
 class deployForDsTester():
@@ -105,9 +106,27 @@ class deployForDsTester():
         subprocess_run_w_echo('docker cp ci-scripts/temp/ci-generate_amf_conf.sh cicd-oai-amf:/openair-amf/generate_amf_conf.sh')
         subprocess_run_w_echo('docker exec -it cicd-oai-amf /bin/bash -c "chmod 755 generate_amf_conf.sh && ./generate_amf_conf.sh" > archives/amf_config.log')
 
+    def deploySMF(self):
+        res = ''
+        # first check if tag exists
+        try:
+            res = subprocess.check_output('docker image inspect oai-smf:' + self.tag, shell=True, universal_newlines=True)
+        except:
+            sys.exit(-1)
+
+        # check if there is an entrypoint
+        entrypoint = re.search('entrypoint', str(res))
+        if entrypoint is not None:
+            print('not supported yet')
+        else:
+            subprocess_run_w_echo('docker run --privileged --name cicd-oai-smf --network cicd-oai-public-net --ip ' + CICD_SMF_PUBLIC_ADDR + ' -d oai-smf:' + self.tag + ' /bin/bash -c "sleep infinity"')
+        subprocess_run_w_echo('sed -e "s@CI_N4_IF_NAME@eth0@" -e "s@CI_SBI_IF_NAME@eth0@" -e "s@CI_AMF_IP_ADDR@' + CICD_AMF_PUBLIC_ADDR + '@" -e "s@CI_UPF_IP_ADDR@' + CICD_UPF_PUBLIC_ADDR + '@" ci-scripts/temp/generate_smf_conf.sh > ci-scripts/temp/ci-generate_smf_conf.sh')
+        subprocess_run_w_echo('docker cp ci-scripts/temp/ci-generate_smf_conf.sh cicd-oai-smf:/openair-smf/generate_smf_conf.sh')
+        subprocess_run_w_echo('docker exec -it cicd-oai-smf /bin/bash -c "chmod 755 generate_smf_conf.sh && ./generate_smf_conf.sh" > archives/smf_config.log')
+
     def removeAllContainers(self):
         try:
-            subprocess_run_w_echo('docker rm -f cicd-mysql-svr')
+            subprocess_run_w_echo('docker rm -f cicd-mysql-svr cicd-oai-amf cicd-oai-smf')
         except:
             pass
 
@@ -157,6 +176,7 @@ while len(argvs) > 1:
            action != 'RemoveNetworks' and \
            action != 'DeployMySqlServer' and \
            action != 'DeployAMF' and \
+           action != 'DeploySMF' and \
            action != 'RemoveAllContainers':
             print('Unsupported Action => ' + action)
             Usage()
@@ -178,6 +198,12 @@ elif DFDT.action == 'DeployAMF':
         Usage()
         sys.exit(-1)
     DFDT.deployAMF()
+elif DFDT.action == 'DeploySMF':
+    if DFDT.tag == '':
+        print('Missing OAI-SMF image tag')
+        Usage()
+        sys.exit(-1)
+    DFDT.deploySMF()
 elif DFDT.action == 'RemoveAllContainers':
     DFDT.removeAllContainers()
 

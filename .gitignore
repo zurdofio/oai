@@ -1,4 +1,4 @@
 archives/
 DS-TEST-RESULTS/
 ci-scripts/mysql-complete.cmd
-ci-scripts/temp/ci-generate_amf_conf.sh
+ci-scripts/temp/ci-*.sh

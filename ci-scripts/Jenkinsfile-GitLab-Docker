@@ -176,6 +176,8 @@ pipeline {
               myShCmd('python3 ./ci-scripts/dsTestDeployTools.py --action=DeployMySqlServer', new_host_flag, new_host_user, new_host)
               // Deploy and configure AMF
               myShCmd('python3 ./ci-scripts/dsTestDeployTools.py --action=DeployAMF --tag=' + amfTag, new_host_flag, new_host_user, new_host)
+              // Deploy and configure SMF
+              myShCmd('python3 ./ci-scripts/dsTestDeployTools.py --action=DeploySMF --tag=' + smfTag, new_host_flag, new_host_user, new_host)
             }
           }
         }
