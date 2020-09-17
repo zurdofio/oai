@@ -2,3 +2,4 @@ archives/
 DS-TEST-RESULTS/
 ci-scripts/mysql-complete.cmd
 ci-scripts/temp/ci-*.sh
+spgw_u.conf

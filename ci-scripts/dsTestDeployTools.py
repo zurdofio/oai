@@ -124,9 +124,27 @@ class deployForDsTester():
         subprocess_run_w_echo('docker cp ci-scripts/temp/ci-generate_smf_conf.sh cicd-oai-smf:/openair-smf/generate_smf_conf.sh')
         subprocess_run_w_echo('docker exec -it cicd-oai-smf /bin/bash -c "chmod 755 generate_smf_conf.sh && ./generate_smf_conf.sh" > archives/smf_config.log')
 
+    def deployUPF(self):
+        res = ''
+        # first check if tag exists
+        try:
+            res = subprocess.check_output('docker image inspect oai-spgwu-tiny:' + self.tag, shell=True, universal_newlines=True)
+        except:
+            sys.exit(-1)
+
+        # check if there is an entrypoint
+        entrypoint = re.search('entrypoint', str(res))
+        if entrypoint is not None:
+            subprocess_run_w_echo('docker run --privileged --name cicd-oai-upf --network cicd-oai-public-net --ip ' + CICD_UPF_PUBLIC_ADDR + ' -d --entrypoint "/bin/bash" oai-spgwu-tiny:' + self.tag + ' -c "sleep infinity"')
+        else:
+            subprocess_run_w_echo('docker run --privileged --name cicd-oai-upf --network cicd-oai-public-net --ip ' + CICD_UPF_PUBLIC_ADDR + ' -d oai-spgwu-tiny:' + self.tag + ' /bin/bash -c "sleep infinity"')
+        subprocess_run_w_echo('python3 ci-scripts/generate_spgwu-tiny_config_script.py --kind=SPGW-U --sxc_ip_addr=' + CICD_SMF_PUBLIC_ADDR + ' --sxu=eth0 --s1u=eth0 --sgi=eth0 --pdn_list="12.0.0.0/24 12.1.0.0/24" --prefix=/openair-spgwu-tiny/etc --from_docker_file')
+        subprocess_run_w_echo('docker cp ./spgw_u.conf cicd-oai-upf:/openair-spgwu-tiny/etc')
+        subprocess_run_w_echo('touch archives/spgwu_config.log')
+
     def removeAllContainers(self):
         try:
-            subprocess_run_w_echo('docker rm -f cicd-mysql-svr cicd-oai-amf cicd-oai-smf')
+            subprocess_run_w_echo('docker rm -f cicd-mysql-svr cicd-oai-amf cicd-oai-smf cicd-oai-upf')
         except:
             pass
 
@@ -151,6 +169,8 @@ def Usage():
     print('python3 dsTestDeployTools.py --action=RemoveNetworks')
     print('python3 dsTestDeployTools.py --action=DeployMySqlServer')
     print('python3 dsTestDeployTools.py --action=DeployAMF --tag=[tag]')
+    print('python3 dsTestDeployTools.py --action=DeploySMF --tag=[tag]')
+    print('python3 dsTestDeployTools.py --action=DeployUPF --tag=[tag]')
     print('python3 dsTestDeployTools.py --action=RemoveAllContainers')
 
 #--------------------------------------------------------------------------------------------------------
@@ -177,6 +197,7 @@ while len(argvs) > 1:
            action != 'DeployMySqlServer' and \
            action != 'DeployAMF' and \
            action != 'DeploySMF' and \
+           action != 'DeployUPF' and \
            action != 'RemoveAllContainers':
             print('Unsupported Action => ' + action)
             Usage()
@@ -204,6 +225,12 @@ elif DFDT.action == 'DeploySMF':
         Usage()
         sys.exit(-1)
     DFDT.deploySMF()
+elif DFDT.action == 'DeployUPF':
+    if DFDT.tag == '':
+        print('Missing OAI-UPF image tag')
+        Usage()
+        sys.exit(-1)
+    DFDT.deployUPF()
 elif DFDT.action == 'RemoveAllContainers':
     DFDT.removeAllContainers()
 
