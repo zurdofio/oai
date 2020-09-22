@@ -3,3 +3,4 @@ DS-TEST-RESULTS/
 ci-scripts/mysql-complete.cmd
 ci-scripts/temp/ci-*.sh
 spgw_u.conf
+deploy_results_oai_cn5g.html

@@ -96,7 +96,8 @@ pipeline {
             echo "Node       is ${NODE_NAME}"
           }
           if (params.DS_Tester_Server_Flag != null) {
-            dsT_host_flag = params.DS_Tester_Server_Flag
+            // Disabling locking of DsTester in development phase of pipeline
+            //dsT_host_flag = params.DS_Tester_Server_Flag
             if (dsT_host_flag) {
               def allParametersPresent = true
               if (params.DS_Tester_Server_Name == null) {
@@ -199,6 +200,7 @@ pipeline {
             always {
               script {
                 copyFrom2ndServer('archives/*_config.log', 'archives', new_host_flag, new_host_user, new_host)
+                sh 'python3 ./ci-scripts/generateHtmlReportDeployment.py --job_name=' + JOB_NAME + ' --job_id=' + BUILD_ID + ' --job_url=' + BUILD_URL
               }
             }
           }
@@ -247,8 +249,8 @@ pipeline {
         if (fileExists('cn5g_fed_docker_logs.zip')) {
           archiveArtifacts artifacts: 'cn5g_fed_docker_logs.zip'
         }
-        if (fileExists('test_results_oai_epc.html')) {
-          archiveArtifacts artifacts: 'test_results_oai_epc.html'
+        if (fileExists('deploy_results_oai_cn5g.html')) {
+          archiveArtifacts artifacts: 'deploy_results_oai_cn5g.html'
         }
       }
     }
