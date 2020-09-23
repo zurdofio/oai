@@ -163,6 +163,9 @@ pipeline {
           }
           if (scmEvent) {
             sh "git clean -x -d -f > /dev/null 2>&1"
+            if ("MERGE".equals(env.gitlabActionType)) {
+              sh "./ci-scripts/doGitLabMerge.sh --src-branch ${env.gitlabSourceBranch} --src-commit ${env.gitlabMergeRequestLastCommit} --target-branch ${env.gitlabTargetBranch} --target-commit ${GIT_COMMIT}"
+            }
             sh "zip -r -qq oai-cn5g-fed.zip .git"
             sh "mkdir -p archives DS-TEST-RESULTS"
             sh './scripts/syncComponents.sh'
@@ -170,6 +173,9 @@ pipeline {
               // Prepare the workspace in remote server
               copyTo2ndServer('oai-cn5g-fed.zip', new_host_flag, new_host_user, new_host)
               myShCmd('git clean -x -d -f > /dev/null 2>&1', new_host_flag, new_host_user, new_host)
+              if ("MERGE".equals(env.gitlabActionType)) {
+                myShCmd("./ci-scripts/doGitLabMerge.sh --src-branch ${env.gitlabSourceBranch} --src-commit ${env.gitlabMergeRequestLastCommit} --target-branch ${env.gitlabTargetBranch} --target-commit ${GIT_COMMIT}", new_host_flag, new_host_user, new_host)
+              }
               myShCmd('mkdir -p archives DS-TEST-RESULTS', new_host_flag, new_host_user, new_host)
               myShCmd('./scripts/syncComponents.sh', new_host_flag, new_host_user, new_host)
             }
