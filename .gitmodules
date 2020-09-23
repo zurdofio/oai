@@ -1,0 +1,9 @@
+[submodule "component/oai-amf"]
+	path = component/oai-amf
+	url = https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-amf.git
+[submodule "component/oai-smf"]
+	path = component/oai-smf
+	url = https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-smf.git
+[submodule "component/oai-upf-equivalent"]
+	path = component/oai-upf-equivalent
+	url = https://github.com/OPENAIRINTERFACE/openair-spgwu-tiny.git
