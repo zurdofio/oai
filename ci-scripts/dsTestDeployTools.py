@@ -68,9 +68,12 @@ class deployForDsTester():
         except:
             pass
 
+		cwd = os.getcwd()
+		if not os.path.isfile(cwd + '/component/oai-amf/build/scripts/oai_db.sql'):
+            sys.exit(-1)
+
         subprocess_run_w_echo('docker run --name cicd-mysql-svr --network cicd-oai-public-net --ip ' + CICD_MYSQL_PUBLIC_ADDR + ' -d -e MYSQL_ROOT_PASSWORD=secretPassword mysql/mysql-server:5.7')
-        # TEMPORARY: TODO --> when repos public, use component strategy
-        subprocess_run_w_echo('docker cp ci-scripts/temp/oai_db.sql cicd-mysql-svr:/home')
+        subprocess_run_w_echo('docker cp component/oai-amf/build/scripts/oai_db.sql cicd-mysql-svr:/home')
         subprocess_run_w_echo('sed -e "s@CICD_AMF_PUBLIC_ADDR@' + CICD_AMF_PUBLIC_ADDR + '@" ci-scripts/mysql-script.cmd > ci-scripts/mysql-complete.cmd')
         subprocess_run_w_echo('docker cp ci-scripts/mysql-complete.cmd cicd-mysql-svr:/home')
         # waiting for the service to be properly started

@@ -152,22 +152,26 @@ pipeline {
             sh "git clean -x -d -f > /dev/null 2>&1"
             sh "zip -r -qq oai-cn5g-fed.zip .git"
             sh "mkdir -p archives DS-TEST-RESULTS"
+            sh './scripts/syncComponents.sh --amf-branch ' + amfBranch + ' --smf-branch ' + smfBranch
             if (new_host_flag) {
               // Prepare the workspace in remote server
               copyTo2ndServer('oai-cn5g-fed.zip', new_host_flag, new_host_user, new_host)
               myShCmd('git clean -x -d -f > /dev/null 2>&1', new_host_flag, new_host_user, new_host)
               myShCmd('mkdir -p archives DS-TEST-RESULTS', new_host_flag, new_host_user, new_host)
+              myShCmd('./scripts/syncComponents.sh --amf-branch ' + amfBranch + ' --smf-branch ' + smfBranch, new_host_flag, new_host_user, new_host)
             }
           }
           if (scmEvent) {
             sh "git clean -x -d -f > /dev/null 2>&1"
             sh "zip -r -qq oai-cn5g-fed.zip .git"
             sh "mkdir -p archives DS-TEST-RESULTS"
+            sh './scripts/syncComponents.sh'
             if (new_host_flag) {
               // Prepare the workspace in remote server
               copyTo2ndServer('oai-cn5g-fed.zip', new_host_flag, new_host_user, new_host)
               myShCmd('git clean -x -d -f > /dev/null 2>&1', new_host_flag, new_host_user, new_host)
               myShCmd('mkdir -p archives DS-TEST-RESULTS', new_host_flag, new_host_user, new_host)
+              myShCmd('./scripts/syncComponents.sh', new_host_flag, new_host_user, new_host)
             }
           }
         }
