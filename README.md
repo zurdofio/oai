@@ -20,6 +20,8 @@ Its main purpose is for Continuous Integration scripting.
 
 It also hosts some tutorials.
 
+* [How to do a container-based simple deployment](docs/DEPLOY_HOME.md).
+
 # Licence info
 
 It is distributed under `OAI Public License V1.1`.
