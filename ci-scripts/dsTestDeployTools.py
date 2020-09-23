@@ -68,8 +68,8 @@ class deployForDsTester():
         except:
             pass
 
-		cwd = os.getcwd()
-		if not os.path.isfile(cwd + '/component/oai-amf/build/scripts/oai_db.sql'):
+        cwd = os.getcwd()
+        if not os.path.isfile(cwd + '/component/oai-amf/build/scripts/oai_db.sql'):
             sys.exit(-1)
 
         subprocess_run_w_echo('docker run --name cicd-mysql-svr --network cicd-oai-public-net --ip ' + CICD_MYSQL_PUBLIC_ADDR + ' -d -e MYSQL_ROOT_PASSWORD=secretPassword mysql/mysql-server:5.7')
