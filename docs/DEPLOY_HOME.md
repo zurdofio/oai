@@ -7,7 +7,7 @@
       </a>
     </td>
     <td style="border-collapse: collapse; border: none; vertical-align: center;">
-      <b><font size = "5">OpenAirInterface Core Network Docker Deployment Home Page</font></b>
+      <b><font size = "5">OpenAirInterface 5G Core Network Docker Deployment Home Page</font></b>
     </td>
   </tr>
 </table>
