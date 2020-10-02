@@ -34,7 +34,7 @@ class HtmlReport():
 
 	def generate(self):
 		cwd = os.getcwd()
-		self.file = open(cwd + '/test_results_oai_cn5g_ds_tester.html', 'w')
+		self.file = open(cwd + '/ds_tester_results_oai_cn5g.html', 'w')
 		self.generateHeader()
 
 		finalStatus = self.testSummaryHeader()

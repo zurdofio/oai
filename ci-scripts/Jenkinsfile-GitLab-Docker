@@ -265,8 +265,8 @@ pipeline {
         if (fileExists('deploy_results_oai_cn5g.html')) {
           archiveArtifacts artifacts: 'deploy_results_oai_cn5g.html'
         }
-        if (fileExists('test_results_oai_cn5g_ds_tester.html')) {
-          archiveArtifacts artifacts: 'test_results_oai_cn5g_ds_tester.html'
+        if (fileExists('ds_tester_results_oai_cn5g.html')) {
+          archiveArtifacts artifacts: 'ds_tester_results_oai_cn5g.html'
         }
       }
     }
