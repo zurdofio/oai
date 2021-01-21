@@ -63,15 +63,15 @@ class HtmlReport():
 		self.file.write('<body><div class="container">\n')
 		self.file.write('  <table width = "100%" style="border-collapse: collapse; border: none;">\n')
 		self.file.write('   <tr style="border-collapse: collapse; border: none;">\n')
-		self.file.write('	<td style="border-collapse: collapse; border: none;">\n')
-		self.file.write('	  <a href="http://www.openairinterface.org/">\n')
-		self.file.write('		 <img src="http://www.openairinterface.org/wp-content/uploads/2016/03/cropped-oai_final_logo2.png" alt="" border="none" height=50 width=150>\n')
-		self.file.write('		 </img>\n')
-		self.file.write('	  </a>\n')
-		self.file.write('	</td>\n')
-		self.file.write('	<td style="border-collapse: collapse; border: none; vertical-align: center;">\n')
-		self.file.write('	  <b><font size = "6">Job Summary -- Job: ' + self.job_name + ' -- Build-ID: <a href="' + self.job_url + '">' + self.job_id + '</a></font></b>\n')
-		self.file.write('	</td>\n')
+		self.file.write('   <td style="border-collapse: collapse; border: none;">\n')
+		self.file.write('    <a href="http://www.openairinterface.org/">\n')
+		self.file.write('      <img src="http://www.openairinterface.org/wp-content/uploads/2016/03/cropped-oai_final_logo2.png" alt="" border="none" height=50 width=150>\n')
+		self.file.write('      </img>\n')
+		self.file.write('    </a>\n')
+		self.file.write('   </td>\n')
+		self.file.write('   <td style="border-collapse: collapse; border: none; vertical-align: center;">\n')
+		self.file.write('     <b><font size = "6">Job Summary -- Job: ' + self.job_name + ' -- Build-ID: <a href="' + self.job_url + '">' + self.job_id + '</a></font></b>\n')
+		self.file.write('   </td>\n')
 		self.file.write('   </tr>\n')
 		self.file.write('  </table>\n')
 		self.file.write('  <br>\n')
@@ -98,15 +98,15 @@ class HtmlReport():
 
 			if finalStatusOK:
 				self.file.write('  <div class="alert alert-success">\n')
-				self.file.write('	<strong>Successful DsTester suite! <span class="glyphicon glyphicon-warning-sign"></span></strong>\n')
+				self.file.write('   <strong>Successful DsTester suite! <span class="glyphicon glyphicon-warning-sign"></span></strong>\n')
 				self.file.write('  </div>\n')
 			else:
 				self.file.write('  <div class="alert alert-danger">\n')
-				self.file.write('	<strong>Failed DsTester suite! <span class="glyphicon glyphicon-warning-sign"></span></strong>\n')
+				self.file.write('   <strong>Failed DsTester suite! <span class="glyphicon glyphicon-warning-sign"></span></strong>\n')
 				self.file.write('  </div>\n')
 		else:
 			self.file.write('  <div class="alert alert-warning">\n')
-			self.file.write('	<strong>LogFile not available! <span class="glyphicon glyphicon-warning-sign"></span></strong>\n')
+			self.file.write('   <strong>LogFile not available! <span class="glyphicon glyphicon-warning-sign"></span></strong>\n')
 			self.file.write('  </div>\n')
 		return finalStatusOK
 
@@ -118,11 +118,11 @@ class HtmlReport():
 		self.file.write('  <button data-toggle="collapse" data-target="#ds-tester-details">More details on DsTester results</button>\n')
 		self.file.write('  <div id="ds-tester-details" class="collapse">\n')
 		self.file.write('  <table class="table-bordered" width = "60%" align = "center" border = 1>\n')
-		self.file.write('	 <tr bgcolor = "#33CCFF" >\n')
-		self.file.write('	   <th>Test Name</th>\n')
-		self.file.write('	   <th>Test Status</th>\n')
-		self.file.write('	   <th>Test Details</th>\n')
-		self.file.write('	 </tr>\n')
+		self.file.write('    <tr bgcolor = "#33CCFF" >\n')
+		self.file.write('      <th>Test Name</th>\n')
+		self.file.write('      <th>Test Status</th>\n')
+		self.file.write('      <th>Test Details</th>\n')
+		self.file.write('    </tr>\n')
 		dsTesterDetailsLog = 'archives/run-5g-dstester.log'
 		cwd = os.getcwd()
 		if os.path.isfile(cwd + '/' + dsTesterDetailsLog):
@@ -146,16 +146,16 @@ class HtmlReport():
 						testName = line.replace('Running ', '')
 					result = re.search('status:', line)
 					if result is not None:
-						self.file.write('	 <tr>\n')
-						self.file.write('	   <td>' + testName + '</td>\n')
+						self.file.write('     <tr>\n')
+						self.file.write('      <td>' + testName + '</td>\n')
 						result = re.search('FAILED', line)
 						if result is not None:
-							self.file.write('	   <td bgcolor = "Red"><b><font color="white">KO</font></b></td>\n')
+							self.file.write('      <td bgcolor = "Red"><b><font color="white">KO</font></b></td>\n')
 						else:
-							self.file.write('	   <td bgcolor = "DarkGreen"><b><font color="white">OK</font></b></td>\n')
+							self.file.write('      <td bgcolor = "DarkGreen"><b><font color="white">OK</font></b></td>\n')
 						testDetails += '</pre>\n'
-						self.file.write('	   <td>' + testDetails + '</td>\n')
-						self.file.write('	 </tr>\n')
+						self.file.write('     <td>' + testDetails + '</td>\n')
+						self.file.write('    </tr>\n')
 						testDetails = '<pre style="background-color:white">\n'
 			detailsLog.close()
 		else:
