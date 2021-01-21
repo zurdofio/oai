@@ -38,6 +38,9 @@ def cn_ci_host = params.Host_CN_CI_Server
 def cn_ci_resource = params.DockerContainers
 def ds_tester_ci_resource = params.DsTester
 
+// When triggered by upstream, specify which tag to use
+def upstreamTagToUse = params.upstreamTagToUse
+
 // Location of the 2nd CN executor
 def new_host_flag = false
 def new_host = ""
@@ -150,6 +153,8 @@ pipeline {
               echo "Upstream Job passed SMF_BRANCH to use: ${smfBranch}"
             }
             sh "git clean -x -d -f > /dev/null 2>&1"
+            sh "git fetch --prune > /dev/null 2>&1"
+            sh 'git checkout -f ' + upstreamTagToUse
             sh "zip -r -qq oai-cn5g-fed.zip .git"
             sh "mkdir -p archives DS-TEST-RESULTS"
             sh './scripts/syncComponents.sh --amf-branch ' + amfBranch + ' --smf-branch ' + smfBranch
