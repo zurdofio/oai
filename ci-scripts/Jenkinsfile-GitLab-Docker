@@ -61,8 +61,8 @@ def amfTag = 'develop'
 def amfBranch = 'develop'
 def smfTag = 'develop'
 def smfBranch = 'develop'
-def spgwuTag = 'develop'
-def spgwuBranch = 'develop'
+def spgwuTag = 'v1.1.0'
+def spgwuBranch = 'master'
 
 //-------------------------------------------------------------------------------
 // Pipeline start
