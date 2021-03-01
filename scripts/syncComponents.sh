@@ -36,6 +36,9 @@ function usage {
     echo ""
     echo "Options:"
     echo "--------"
+    echo "    --nrf-branch ####"
+    echo "    Specify the source branch for the OAI-NRF component"
+    echo ""
     echo "    --amf-branch ####"
     echo "    Specify the source branch for the OAI-AMF component"
     echo ""
@@ -50,6 +53,7 @@ function usage {
     echo ""
 }
 
+NRF_BRANCH='develop'
 AMF_BRANCH='develop'
 SMF_BRANCH='develop'
 SPGWU_BRANCH='master'
@@ -65,6 +69,12 @@ case $key in
     shift
     usage
     exit 0
+    ;;
+    --nrf-branch)
+    NRF_BRANCH="$2"
+    doDefault=0
+    shift
+    shift
     ;;
     --amf-branch)
     AMF_BRANCH="$2"
@@ -94,6 +104,7 @@ esac
 done
 
 echo "---------------------------------------------------------"
+echo "OAI-NRF    component branch : ${NRF_BRANCH}"
 echo "OAI-AMF    component branch : ${AMF_BRANCH}"
 echo "OAI-SMF    component branch : ${SMF_BRANCH}"
 echo "OAI-SPGW-U component branch : ${SPGWU_BRANCH}"
@@ -112,6 +123,11 @@ if [ $doDefault -eq 1 ]
 then
     git submodule foreach 'git fetch --prune && git checkout develop && git pull origin develop'  > /dev/null 2>&1
 else
+    pushd component/oai-nrf
+    git fetch --prune > /dev/null 2>&1
+    git checkout $NRF_BRANCH > /dev/null 2>&1
+    git pull origin $NRF_BRANCH > /dev/null 2>&1
+    popd
     pushd component/oai-amf
     git fetch --prune > /dev/null 2>&1
     git checkout $AMF_BRANCH > /dev/null 2>&1

@@ -57,6 +57,8 @@ def scmEvent = false
 def upstreamEvent = false
 
 // Default tags / branches  --> could be passed on by upstream job or by PR content
+def nrfTag = 'develop'
+def nrfBranch = 'develop'
 def amfTag = 'develop'
 def amfBranch = 'develop'
 def smfTag = 'develop'
@@ -136,6 +138,14 @@ pipeline {
           }
 
           if (upstreamEvent) {
+            if (params.NRF_TAG != null) {
+              nrfTag = params.NRF_TAG
+              echo "Upstream Job passed NRF_TAG to use: ${nrfTag}"
+            }
+            if (params.NRF_BRANCH != null) {
+              nrfBranch = params.NRF_BRANCH
+              echo "Upstream Job passed NRF_BRANCH to use: ${nrfBranch}"
+            }
             if (params.AMF_TAG != null) {
               amfTag = params.AMF_TAG
               echo "Upstream Job passed AMF_TAG to use: ${amfTag}"
@@ -157,13 +167,13 @@ pipeline {
             sh 'git checkout -f ' + upstreamTagToUse
             sh "zip -r -qq oai-cn5g-fed.zip .git"
             sh "mkdir -p archives DS-TEST-RESULTS"
-            sh './scripts/syncComponents.sh --amf-branch ' + amfBranch + ' --smf-branch ' + smfBranch + ' --spgwu-tiny-branch ' + spgwuBranch
+            sh './scripts/syncComponents.sh --nrf-branch ' + nrfBranch + ' --amf-branch ' + amfBranch + ' --smf-branch ' + smfBranch + ' --spgwu-tiny-branch ' + spgwuBranch
             if (new_host_flag) {
               // Prepare the workspace in remote server
               copyTo2ndServer('oai-cn5g-fed.zip', new_host_flag, new_host_user, new_host)
               myShCmd('git clean -x -d -f > /dev/null 2>&1', new_host_flag, new_host_user, new_host)
               myShCmd('mkdir -p archives DS-TEST-RESULTS', new_host_flag, new_host_user, new_host)
-              myShCmd('./scripts/syncComponents.sh --amf-branch ' + amfBranch + ' --smf-branch ' + smfBranch, new_host_flag, new_host_user, new_host)
+              myShCmd('./scripts/syncComponents.sh --nrf-branch ' + nrfBranch + ' --amf-branch ' + amfBranch + ' --smf-branch ' + smfBranch, new_host_flag, new_host_user, new_host)
             }
           }
           if (scmEvent) {
@@ -187,7 +197,7 @@ pipeline {
           }
           if ((!upstreamEvent) && (!scmEvent)) {
             sh "git clean -x -d -f > /dev/null 2>&1"
-            sh './scripts/syncComponents.sh --amf-branch ' + amfBranch + ' --smf-branch ' + smfBranch + ' --spgwu-tiny-branch ' + spgwuBranch
+            sh './scripts/syncComponents.sh --nrf-branch ' + nrfBranch + ' --amf-branch ' + amfBranch + ' --smf-branch ' + smfBranch + ' --spgwu-tiny-branch ' + spgwuBranch
             sh "mkdir -p archives DS-TEST-RESULTS"
           }
         }
