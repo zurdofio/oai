@@ -52,7 +52,7 @@ function usage {
 
 AMF_BRANCH='develop'
 SMF_BRANCH='develop'
-SPGWU_BRANCH='develop'
+SPGWU_BRANCH='master'
 
 doDefault=1
 
@@ -74,12 +74,6 @@ case $key in
     ;;
     --smf-branch)
     SMF_BRANCH="$2"
-    doDefault=0
-    shift
-    shift
-    ;;
-    --spgwc-branch)
-    SPGWC_BRANCH="$2"
     doDefault=0
     shift
     shift
@@ -106,22 +100,31 @@ echo "OAI-SPGW-U component branch : ${SPGWU_BRANCH}"
 echo "---------------------------------------------------------"
 
 # First do a clean-up
-git submodule deinit --all --force
+echo "git submodule deinit --all --force"
+git submodule deinit --all --force > /dev/null 2>&1
 
-git submodule init
-git submodule update
+echo "git submodule init"
+git submodule init > /dev/null 2>&1
+echo "git submodule update"
+git submodule update  > /dev/null 2>&1
 
 if [ $doDefault -eq 1 ]
 then
-    git submodule foreach 'git fetch --prune && git checkout develop && git pull origin develop'
+    git submodule foreach 'git fetch --prune && git checkout develop && git pull origin develop'  > /dev/null 2>&1
 else
     pushd component/oai-amf
-    git fetch --prune && git checkout $AMF_BRANCH && git pull origin $AMF_BRANCH
+    git fetch --prune > /dev/null 2>&1
+    git checkout $AMF_BRANCH > /dev/null 2>&1
+    git pull origin $AMF_BRANCH > /dev/null 2>&1
     popd
     pushd component/oai-smf
-    git fetch --prune && git checkout $SMF_BRANCH && git pull origin $SMF_BRANCH
+    git fetch --prune > /dev/null 2>&1
+    git checkout $SMF_BRANCH > /dev/null 2>&1
+    git pull origin $SMF_BRANCH > /dev/null 2>&1
     popd
     pushd component/oai-upf-equivalent
-    git fetch --prune && git checkout $SPGWU_BRANCH && git pull origin $SPGWU_BRANCH
+    git fetch --prune > /dev/null 2>&1
+    git checkout $SPGWU_BRANCH > /dev/null 2>&1
+    git pull origin $SPGWU_BRANCH > /dev/null 2>&1
     popd
 fi
