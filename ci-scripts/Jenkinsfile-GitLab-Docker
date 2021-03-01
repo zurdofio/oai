@@ -130,8 +130,8 @@ pipeline {
           for (cause in currentBuild.getBuildCauses()) {
             if (cause.toString() ==~ /.*UpstreamCause.*/) {
               upstreamEvent = true
-            } else {
-              scmEvent = true
+            //} else {
+            //  scmEvent = true
             }
           }
 
