@@ -212,7 +212,7 @@ pipeline {
               // Deploy and configure SMF
               myShCmd('python3 ./ci-scripts/dsTestDeployTools.py --action=DeploySMF --tag=' + smfTag, new_host_flag, new_host_user, new_host)
               // Deploy and configure UPF
-              myShCmd('python3 ./ci-scripts/dsTestDeployTools.py --action=DeployUPF --tag=develop', new_host_flag, new_host_user, new_host)
+              myShCmd('python3 ./ci-scripts/dsTestDeployTools.py --action=DeployUPF --tag=' + spgwuTag, new_host_flag, new_host_user, new_host)
             }
           }
           post {
