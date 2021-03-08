@@ -102,7 +102,7 @@ class deployForDsTester():
         # check if there is an entrypoint
         entrypoint = re.search('entrypoint', str(res))
         if entrypoint is not None:
-            print('not supported yet')
+            subprocess_run_w_echo('docker run --privileged --name cicd-oai-amf --network cicd-oai-public-net --ip ' + CICD_AMF_PUBLIC_ADDR + ' -d --entrypoint "/bin/bash" oai-amf:' + self.tag + ' -c "sleep infinity"')
         else:
             subprocess_run_w_echo('docker run --privileged --name cicd-oai-amf --network cicd-oai-public-net --ip ' + CICD_AMF_PUBLIC_ADDR + ' -d oai-amf:' + self.tag + ' /bin/bash -c "sleep infinity"')
         subprocess_run_w_echo('sed -e "s@CI_NGAP_IF_NAME@eth0@" -e "s@CI_N11_IF_NAME@eth0@" -e "s@CI_SMF0_IP_ADDRESS@' + CICD_SMF_PUBLIC_ADDR + '@" -e "s@CI_SMF1_IP_ADDRESS@' + CICD_DUMMY_SMF_PUBLIC_ADDR + '@" -e "s@CI_MYSQL_IP_ADDRESS@' + CICD_MYSQL_PUBLIC_ADDR + '@" ci-scripts/temp/generate_amf_conf.sh > ci-scripts/temp/ci-generate_amf_conf.sh')
@@ -120,7 +120,7 @@ class deployForDsTester():
         # check if there is an entrypoint
         entrypoint = re.search('entrypoint', str(res))
         if entrypoint is not None:
-            print('not supported yet')
+            subprocess_run_w_echo('docker run --privileged --name cicd-oai-smf --network cicd-oai-public-net --ip ' + CICD_SMF_PUBLIC_ADDR + ' -d --entrypoint "/bin/bash" oai-smf:' + self.tag + ' -c "sleep infinity"')
         else:
             subprocess_run_w_echo('docker run --privileged --name cicd-oai-smf --network cicd-oai-public-net --ip ' + CICD_SMF_PUBLIC_ADDR + ' -d oai-smf:' + self.tag + ' /bin/bash -c "sleep infinity"')
         subprocess_run_w_echo('sed -e "s@CI_N4_IF_NAME@eth0@" -e "s@CI_SBI_IF_NAME@eth0@" -e "s@CI_AMF_IP_ADDR@' + CICD_AMF_PUBLIC_ADDR + '@" -e "s@CI_UPF_IP_ADDR@' + CICD_UPF_PUBLIC_ADDR + '@" ci-scripts/temp/generate_smf_conf.sh > ci-scripts/temp/ci-generate_smf_conf.sh')
