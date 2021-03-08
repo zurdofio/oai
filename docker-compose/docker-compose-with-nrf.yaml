@@ -9,7 +9,7 @@ services:
             - ./oai_db.sql:/docker-entrypoint-initdb.d/oai_db.sql
             - ./mysql-healthcheck.sh:/tmp/mysql-healthcheck.sh
         environment:
-            - TZ='Europe/Paris'
+            - TZ=Europe/Paris
             - MYSQL_DATABASE=oai_db
             - MYSQL_USER=test
             - MYSQL_PASSWORD=test
@@ -24,11 +24,12 @@ services:
                 ipv4_address: 192.168.70.6
     oai-amf:
         container_name: "oai-amf"
-        image: oai-amf:nrf-com
+        image: oai-amf:develop
         ports:
              - 38412/sctp
              - 80/tcp
         environment:
+            - TZ=Europe/Paris
             - INSTANCE=0
             - PID_DIRECTORY=/var/run
             - MCC=208
@@ -88,11 +89,12 @@ services:
                 ipv4_address: 192.168.70.2
     oai-smf:
         container_name: "oai-smf"
-        image: oai-smf:nrf-com
+        image: oai-smf:develop
         ports:
             - 80/tcp
             - 9090/tcp
         environment:
+            - TZ=Europe/Paris
             - INSTANCE=0
             - PID_DIRECTORY=/var/run
             - SMF_INTERFACE_NAME_FOR_N4=eth0
@@ -135,6 +137,7 @@ services:
             - 80/tcp
             - 9090/tcp
         environment:
+            - TZ=Europe/Paris
             - NRF_INTERFACE_NAME_FOR_SBI=eth0
             - NRF_INTERFACE_PORT_FOR_SBI=80
             - NRF_INTERFACE_HTTP2_PORT_FOR_SBI=9090
@@ -153,11 +156,12 @@ services:
             retries: 5
     oai-spgwu:
         container_name: "oai-spgwu"
-        image: oai-spgwu:nrf-com
+        image: oai-spgwu:develop
         ports:
             - 2152/udp
             - 8805/udp
         environment:
+            - TZ=Europe/Paris
             - PID_DIRECTORY=/var/run
             - SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP=eth0
             - SGW_INTERFACE_NAME_FOR_SX=eth0

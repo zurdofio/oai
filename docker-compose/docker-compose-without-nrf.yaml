@@ -9,7 +9,7 @@ services:
             - ./oai_db.sql:/docker-entrypoint-initdb.d/oai_db.sql
             - ./mysql-healthcheck.sh:/tmp/mysql-healthcheck.sh
         environment:
-            - TZ='Europe/Paris'
+            - TZ=Europe/Paris
             - MYSQL_DATABASE=oai_db
             - MYSQL_USER=test
             - MYSQL_PASSWORD=test
@@ -29,6 +29,7 @@ services:
              - 38412/sctp
              - 80/tcp
         environment:
+            - TZ=Europe/Paris
             - INSTANCE=0
             - PID_DIRECTORY=/var/run
             - MCC=208
@@ -92,6 +93,7 @@ services:
             - 80/tcp
             - 9090/tcp
         environment:
+            - TZ=Europe/Paris
             - INSTANCE=0
             - PID_DIRECTORY=/var/run
             - SMF_INTERFACE_NAME_FOR_N4=eth0
@@ -132,6 +134,7 @@ services:
             - 2152/udp
             - 8805/udp
         environment:
+            - TZ=Europe/Paris
             - PID_DIRECTORY=/var/run
             - SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP=eth0
             - SGW_INTERFACE_NAME_FOR_SX=eth0
