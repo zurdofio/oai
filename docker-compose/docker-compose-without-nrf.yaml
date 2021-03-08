@@ -9,6 +9,7 @@ services:
             - ./oai_db.sql:/docker-entrypoint-initdb.d/oai_db.sql
             - ./mysql-healthcheck.sh:/tmp/mysql-healthcheck.sh
         environment:
+            - TZ='Europe/Paris'
             - MYSQL_DATABASE=oai_db
             - MYSQL_USER=test
             - MYSQL_PASSWORD=test
@@ -20,7 +21,7 @@ services:
             retries: 5
         networks:
             5gcore:
-                ipv4_address: 192.168.68.6
+                ipv4_address: 192.168.70.6
     oai-amf:
         container_name: "oai-amf"
         image: oai-amf:develop
@@ -52,25 +53,28 @@ services:
             - AMF_INTERFACE_NAME_FOR_NGAP=eth0
             - AMF_INTERFACE_NAME_FOR_N11=eth0
             - SMF_INSTANCE_ID_0=1
-            - SMF_IPV4_ADDR_0=192.168.68.3
+            - SMF_IPV4_ADDR_0=192.168.70.3
             - SMF_HTTP_VERSION_0=v1
+            - SELECTED_0=true
             - SMF_INSTANCE_ID_1=2
-            - SMF_IPV4_ADDR_1=192.168.68.3
+            - SMF_IPV4_ADDR_1=192.168.70.3
             - SMF_HTTP_VERSION_1=v1
-            - MYSQL_SERVER=192.168.68.6
+            - SELECTED_1=false
+            - MYSQL_SERVER=192.168.70.6
             - MYSQL_USER=root
             - MYSQL_PASS=linux
             - MYSQL_DB=oai_db
             - OPERATOR_KEY=63bfa50ee6523365ff14c1f45f88737d
-            - NRF_IPV4_ADDRESS=192.168.68.4
+            - NRF_IPV4_ADDRESS=192.168.70.4
             - NRF_PORT=80
+            - NF_REGISTRATION=no
+            - SMF_SELECTION=no
             - NRF_API_VERSION=v1
             - AUSF_IPV4_ADDRESS=127.0.0.1
             - AUSF_PORT=80
             - AUSF_API_VERSION=v1
         depends_on:
             - mysql
-            - oai-nrf
         volumes:
             - ./amf-healthcheck.sh:/openair-amf/bin/amf-healthcheck.sh
         healthcheck:
@@ -80,7 +84,7 @@ services:
             retries: 5
         networks:
             5gcore:
-                ipv4_address: 192.168.68.2
+                ipv4_address: 192.168.70.2
     oai-smf:
         container_name: "oai-smf"
         image: oai-smf:develop
@@ -97,18 +101,19 @@ services:
             - SMF_API_VERSION=v1
             - DEFAULT_DNS_IPV4_ADDRESS=192.168.18.129
             - DEFAULT_DNS_SEC_IPV4_ADDRESS=8.8.8.8
-            - AMF_IPV4_ADDRESS=192.168.68.2
+            - AMF_IPV4_ADDRESS=192.168.70.2
             - AMF_PORT=80
             - AMF_API_VERSION=v1
             - UDM_IPV4_ADDRESS=127.0.0.1
             - UDM_PORT=80
             - UDM_API_VERSION=v1
-            - UPF_IPV4_ADDRESS=192.168.68.5
-            - NRF_IPV4_ADDRESS=192.168.68.4
+            - UPF_IPV4_ADDRESS=192.168.70.5
+            - NRF_IPV4_ADDRESS=192.168.70.4
             - NRF_PORT=80
             - NRF_API_VERSION=v1
+            - REGISTER_NRF=no
+            - DISCOVER_UPF=no
         depends_on:
-            - oai-nrf
             - oai-amf
         volumes:
             - ./smf-healthcheck.sh:/openair-smf/bin/smf-healthcheck.sh
@@ -119,7 +124,7 @@ services:
             retries: 5
         networks:
             5gcore:
-                ipv4_address: 192.168.68.3
+                ipv4_address: 192.168.70.3
     oai-spgwu:
         container_name: "oai-spgwu"
         image: oai-spgwu:develop
@@ -132,10 +137,11 @@ services:
             - SGW_INTERFACE_NAME_FOR_SX=eth0
             - PGW_INTERFACE_NAME_FOR_SGI=eth0
             - NETWORK_UE_IP=12.1.1.0/24
-            - SPGWC0_IP_ADDRESS=192.168.68.3
-            - NRF_IPV4_ADDRESS=192.168.68.4
+            - SPGWC0_IP_ADDRESS=192.168.70.3
+            - NRF_IPV4_ADDRESS=192.168.70.4
             - NRF_PORT=80
             - NRF_API_VERSION=v1
+            - REGISTER_NRF=no
         depends_on:
             - oai-smf
         cap_add:
@@ -153,10 +159,24 @@ services:
             retries: 5
         networks:
             5gcore:
-                ipv4_address: 192.168.68.5
+                ipv4_address: 192.168.70.5
+    oai-external-dn:
+        image: ubuntu:bionic
+        privileged: true
+        container_name: oai-external-dn
+        entrypoint: /bin/bash -c \
+              "apt update; apt install -y iptables iproute2 iputils-ping;"\
+              "iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;"\
+              "ip route add 12.1.1.0/24 via 192.168.70.5 dev eth0; sleep infinity"
+        command: ["/bin/bash", "-c", "trap : TERM INT; sleep infinity & wait"]
+        depends_on:
+            - oai-spgwu
+        networks:
+            5gcore:
+                ipv4_address: 192.168.70.7
 networks:
     5gcore:
         driver: bridge
         ipam:
             config:
-                - subnet: 192.168.68.0/24
+                - subnet: 192.168.70.0/24
