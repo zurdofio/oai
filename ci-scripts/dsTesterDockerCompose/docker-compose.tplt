@@ -7,7 +7,7 @@ services:
              - 3306
         command: --init-file /docker-entrypoint-initdb.d/oai_db.sql
         volumes:
-            - ../../component/oai-amf/build/scripts/oai_db.sql:/docker-entrypoint-initdb.d/oai_db.sql:rw
+            - ../../docker-compose/oai_db.sql:/docker-entrypoint-initdb.d/oai_db.sql:rw
         environment:
             - MYSQL_DATABASE=oai_db
             - MYSQL_USER=test
