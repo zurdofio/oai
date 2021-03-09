@@ -266,7 +266,7 @@ pipeline {
           script {
             // Check status on mysql.
             try {
-              sh 'docker exec -it cicd-mysql-svr /bin/bash -c "mysqladmin -u root --password=linux ping" > archives/mysql_status.log 2>&1'
+              sh 'docker exec cicd-mysql-svr /bin/bash -c "mysqladmin -u root --password=linux ping" > archives/mysql_status.log 2>&1'
               sh 'docker inspect --format=\'STATUS: {{.State.Health.Status}}\' cicd-mysql-svr >> archives/mysql_status.log'
             } catch (Exception e) {
               sh 'echo "STATUS: KO" >> archives/mysql_status.log'

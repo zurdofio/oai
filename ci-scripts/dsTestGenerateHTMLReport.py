@@ -44,10 +44,11 @@ class HtmlReport():
 		self.generateFooter()
 		self.file.close()
 
-		if finalStatus:
-			sys.exit(0)
-		else:
-			sys.exit(-1)
+		try:
+			if finalStatus:
+				sys.exit(0)
+		except:
+			print("DS-TESTER testing FAILED")
 
 	def generateHeader(self):
 		# HTML Header
