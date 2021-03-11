@@ -164,7 +164,7 @@ services:
 
     cicd_oai_upf:
         container_name: cicd-oai-upf
-        image: oai-spgwu:develop
+        image: oai-spgwu:nrf-com
         ports:
             - 2152
             - 8805
