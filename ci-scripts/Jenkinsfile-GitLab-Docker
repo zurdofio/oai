@@ -226,9 +226,9 @@ pipeline {
             error "OAI SMF Image tag to test does not exist!"
           }
           try {
-            sh 'echo "OAI_SPGWU_TAG: oai-spgwu-tiny:' + spgwuTag +'" > archives/oai_spgwu_image_info.log'
-            sh 'docker image inspect --format=\'Size = {{.Size}} bytes\' oai-spgwu-tiny:' + spgwuTag + ' >> archives/oai_spgwu_image_info.log'
-            sh 'docker image inspect --format=\'Date = {{.Created}}\' oai-spgwu-tiny:' + spgwuTag + ' >> archives/oai_spgwu_image_info.log'
+            sh 'echo "OAI_SPGWU_TAG: oai-spgwu:' + spgwuTag +'" > archives/oai_spgwu_image_info.log'
+            sh 'docker image inspect --format=\'Size = {{.Size}} bytes\' oai-spgwu:' + spgwuTag + ' >> archives/oai_spgwu_image_info.log'
+            sh 'docker image inspect --format=\'Date = {{.Created}}\' oai-spgwu:' + spgwuTag + ' >> archives/oai_spgwu_image_info.log'
           } catch (Exception e) {
             error "OAI SPGW-U-Tiny Image tag to test does not exist!"
           }
