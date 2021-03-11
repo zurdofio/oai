@@ -87,7 +87,7 @@ services:
             - SMF_INSTANCE_ID_1=2
             - SMF_IPV4_ADDR_1=192.168.61.197
             - SMF_HTTP_VERSION_1=v1
-			- SELECTED_1=false
+            - SELECTED_1=false
             - MYSQL_SERVER=cicd-mysql-svr
             - MYSQL_USER=root
             - MYSQL_PASS=linux
