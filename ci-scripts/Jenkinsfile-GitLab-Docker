@@ -61,7 +61,7 @@ def upstreamEvent = false
 
 // Default tags / branches  --> could be passed on by upstream job or by PR content
 def nrfTag = 'dockerfile'
-def nrfBranch = 'develop'
+def nrfBranch = 'dockerfile'
 def amfTag = 'nrf-com'
 def amfBranch = 'develop'
 def smfTag = 'dockerfile'
