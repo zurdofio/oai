@@ -60,13 +60,13 @@ def scmEvent = false
 def upstreamEvent = false
 
 // Default tags / branches  --> could be passed on by upstream job or by PR content
-def nrfTag = 'develop'
-def nrfBranch = 'dockerfile'
-def amfTag = 'develop'
+def nrfTag = 'dockerfile'
+def nrfBranch = 'develop'
+def amfTag = 'nrf-com'
 def amfBranch = 'develop'
-def smfTag = 'develop'
+def smfTag = 'dockerfile'
 def smfBranch = 'develop'
-def spgwuTag = 'v1.1.0'
+def spgwuTag = 'nrf-com'
 def spgwuBranch = 'master'
 
 //-------------------------------------------------------------------------------
