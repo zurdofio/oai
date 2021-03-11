@@ -96,7 +96,7 @@ services:
             - NRF_IPV4_ADDRESS=192.168.61.195
             - NRF_PORT=80
             - NF_REGISTRATION=yes
-			- SMF_SELECTION=yes
+            - SMF_SELECTION=yes
             - NRF_API_VERSION=v1
             - AUSF_IPV4_ADDRESS=192.168.61.210
             - AUSF_PORT=80
