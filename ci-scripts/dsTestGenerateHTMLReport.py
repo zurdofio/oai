@@ -44,10 +44,9 @@ class HtmlReport():
 		self.generateFooter()
 		self.file.close()
 
-		try:
-			if finalStatus:
-				sys.exit(0)
-		except:
+		if finalStatus:
+			sys.exit(0)
+		else:
 			print("DS-TESTER testing FAILED")
 
 	def generateHeader(self):
