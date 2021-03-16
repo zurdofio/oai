@@ -60,14 +60,14 @@ def scmEvent = false
 def upstreamEvent = false
 
 // Default tags / branches  --> could be passed on by upstream job or by PR content
-def nrfTag = 'develop'
-def nrfBranch = 'develop'
-def amfTag = 'develop'
-def amfBranch = 'develop'
-def smfTag = 'develop'
-def smfBranch = 'develop'
-def spgwuTag = 'nrf-com'
-def spgwuBranch = 'master'
+def nrfTag = params.nrfTag
+def nrfBranch = params.nrfBranch
+def amfTag = params.amfTag
+def amfBranch = params.amfBranch
+def smfTag = params.smfTag
+def smfBranch = params.smfBranch
+def spgwuTag = params.spgwuTag
+def spgwuBranch = params.spgwuBranch
 
 //-------------------------------------------------------------------------------
 // Pipeline start
@@ -226,9 +226,9 @@ pipeline {
             error "OAI SMF Image tag to test does not exist!"
           }
           try {
-            sh 'echo "OAI_SPGWU_TAG: oai-spgwu:' + spgwuTag +'" > archives/oai_spgwu_image_info.log'
-            sh 'docker image inspect --format=\'Size = {{.Size}} bytes\' oai-spgwu:' + spgwuTag + ' >> archives/oai_spgwu_image_info.log'
-            sh 'docker image inspect --format=\'Date = {{.Created}}\' oai-spgwu:' + spgwuTag + ' >> archives/oai_spgwu_image_info.log'
+            sh 'echo "OAI_SPGWU_TAG: oai-spgwu-tiny:' + spgwuTag +'" > archives/oai_spgwu_image_info.log'
+            sh 'docker image inspect --format=\'Size = {{.Size}} bytes\' oai-spgwu-tiny:' + spgwuTag + ' >> archives/oai_spgwu_image_info.log'
+            sh 'docker image inspect --format=\'Date = {{.Created}}\' oai-spgwu-tiny:' + spgwuTag + ' >> archives/oai_spgwu_image_info.log'
           } catch (Exception e) {
             error "OAI SPGW-U-Tiny Image tag to test does not exist!"
           }
@@ -241,7 +241,7 @@ pipeline {
           echo '\u2705 \u001B[32mDeploy CN5G in idle mode\u001B[0m'
           // Prepare all needed files for docker-compose
           // First put all correct tags to test
-          sh 'sed -e "s#NRF_IMAGE_TAG#' + nrfTag + '#" -e "s#AMF_IMAGE_TAG#' + amfTag + '#" -e "s#SMF_IMAGE_TAG#' + smfTag + '#" ci-scripts/dsTesterDockerCompose/docker-compose.tplt > ci-scripts/dsTesterDockerCompose/docker-compose.yml'
+          sh 'sed -e "s#NRF_IMAGE_TAG#' + nrfTag + '#" -e "s#AMF_IMAGE_TAG#' + amfTag + '#" -e "s#SMF_IMAGE_TAG#' + smfTag + '#" -e "s#SPGWU_IMAGE_TAG#' + spgwuTag + '#" ci-scripts/dsTesterDockerCompose/docker-compose.tplt > ci-scripts/dsTesterDockerCompose/docker-compose.yml'
           // Entrypoints are modified to be inactive for dsTester framework
           sh 'sed -e "s@exec.*@sleep infinity@" component/oai-nrf/scripts/entrypoint.sh > ci-scripts/dsTesterDockerCompose/nrf-entrypoint-sleep.sh'
           sh 'sed -e "s@exec.*@sleep infinity@" component/oai-amf/scripts/entrypoint.sh > ci-scripts/dsTesterDockerCompose/amf-entrypoint-sleep.sh'
