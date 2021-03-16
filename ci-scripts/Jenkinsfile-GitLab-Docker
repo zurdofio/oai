@@ -319,6 +319,7 @@ pipeline {
             sh 'cd ' + dsTestFrameworkLocation + '/scripts && export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:.:/usr/local/devsol/bin && CI_ENV=True SRC_BASE_DIR=' + WORKSPACE + ' ./run-5gc.bash -pt --shark --detach --get-results --5g --pcap-test > ' + WORKSPACE + '/archives/run-5g-dstester.log 2>&1'
             sh 'cd ' + dsTestFrameworkLocation + ' && git stash > /dev/null'
             sh 'cd ' + dsTestFrameworkLocation + ' && git stash clear > /dev/null'
+            sh 'cd ' + WORKSPACE + ' && python3 ./ci-scripts/toCheckDSTesterResult.py' 		
           }
         }
       }
