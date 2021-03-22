@@ -12,8 +12,6 @@
   </tr>
 </table>
 
-![SmartEvent State Machine](./images/smartevent.png)
-
 **TABLE OF CONTENTS**
 
 1.  [Pre-requisites](#1-Pre-requisites0)
