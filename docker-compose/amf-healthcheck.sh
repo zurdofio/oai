@@ -26,32 +26,32 @@ if [[ -z $N11_PORT_STATUS ]]; then
 	echo "Healthcheck error: N11/SBI TCP/HTTP port $AMF_PORT_FOR_N11_HTTP is not listening"
 fi
 
-host="${MYSQL_SERVER}"
-user="${MYSQL_USER:-root}"
-export MYSQL_PWD="${MYSQL_PASS}"
+#host="${MYSQL_SERVER}"
+#user="${MYSQL_USER:-root}"
+#export MYSQL_PWD="${MYSQL_PASS}"
 
-args=(
-	-h"$host"
-	-u"$user"
-	--silent
-)
+#args=(
+#	-h"$host"
+#	-u"$user"
+#	--silent
+#)
 
-if ! command -v mysql &> /dev/null; then
-	echo "Installing mysql command"
-	apt update
-	apt-get -y install mysql-client
-else
-	if select="$(echo 'SELECT 1' | mysql "${args[@]}")" && [ "$select" = '1' ]; then
-		database_check=$(mysql -h$host -u$user -D oai_db --silent -e "SELECT * FROM users;")
-		if [[ -z $database_check ]]; then
-			echo "Healthcheck error: oai_db not populated"
-			STATUS=1
-		fi
-		STATUS=0
-	else
-		echo "Healthcheck error: Mysql port inactive"
-		STATUS=1
-	fi
-fi
+#if ! command -v mysql &> /dev/null; then
+#	echo "Installing mysql command"
+#	apt update
+#	apt-get -y install mysql-client
+#else
+#	if select="$(echo 'SELECT 1' | mysql "${args[@]}")" && [ "$select" = '1' ]; then
+#		database_check=$(mysql -h$host -u$user -D oai_db --silent -e "SELECT * FROM users;")
+#		if [[ -z $database_check ]]; then
+#			echo "Healthcheck error: oai_db not populated"
+#			STATUS=1
+#		fi
+#		STATUS=0
+#	else
+#		echo "Healthcheck error: Mysql port inactive"
+#		STATUS=1
+#	fi
+#fi
 
 exit $STATUS
