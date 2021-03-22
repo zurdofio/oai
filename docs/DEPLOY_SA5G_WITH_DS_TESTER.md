@@ -17,15 +17,15 @@
 
 **TABLE OF CONTENTS**
 
-1.  [Pre-requisites](#1-Pre-requisites)
-2.  [Building Container Images](#2-Building-Container-Images)
-3.  [Configuring Host Machines](#3-Configuring-Host-Machines)
-4.  [Configuring OAI 5G Core Network Functions](#4-Configuring-the-OAI-5G-Core-Network-Functions)
-5.  [Configuring dsTest Scenario](#5-Configuring-DsTester-Scenario)
-6.  [Deploying OAI 5G Core Network](#6-Deploying-OAI-5g-Core-Network)
-7.  [Executing dsTest Scenario](#7-Executing-the-dsTest-Scenario)
-8.  [Analysing Scenario Results](#8-Analysing-the-Scenario-Results)
-9.  [Demo Video](#9-Demo-Video)
+1.  [Pre-requisites](#1-pre-requisites)
+2.  [Building Container Images](#2-building-container-images)
+3.  [Configuring Host Machines](#3-configuring-host-machines)
+4.  [Configuring OAI 5G Core Network Functions](#4-configuring-the-oai-5g-core-network-functions)
+5.  [Configuring dsTest Scenario](#5-configuring-dstester-scenario)
+6.  [Deploying OAI 5G Core Network](#6-deploying-oai-5g-core-network)
+7.  [Executing dsTest Scenario](#7-executing-the-dstest-scenario)
+8.  [Analysing Scenario Results](#8-analysing-the-scenario-results)
+9.  [Demo Video](#9-demo-video)
 
 ## 1. Pre-requisites ##
 
@@ -50,12 +50,12 @@ The new version of `wireshark` may not be available in the ubuntu repository so 
 
 - In this demo the image tags and commits which were used are listed below, follow the [Building images](./BUILD_IMAGES.md) to build images with below tags. 
 
-**cNF Name** | **Branch Name** | **Commit at time of writing**              | Ubuntu18 | CentOS7 | CentOS8
------------- | --------------- | ------------------------------------------ | -------- | ------- | -------
-AMF          | `multiple-pdu-sessions`       | `3c59c6977ac8ecd943c3e77579cda84d4bb396e7` | X        |         |  
-SMF          | `develop`       | `0dba68d6a01e1dad050f47437647f62d40acaec6` | X        |         |  
-NRF          | `develop`       | `0e877cb5b80a9c74fa6abca60b95e2d3d22f7a52` | X        |         |  
-SPGW-U-TINY  | `gtp_extension_header`       | `f13f4a5e2807355d23f136119f85fbf48ed569ea` | X        |         |  
+| CNF Name    | Branch Name             | Commit at time of writing                  | Ubuntu 18.04 | RHEL8          |
+| ----------- |:----------------------- | ------------------------------------------ | ------------ | ---------------|
+| AMF         | `multiple-pdu-sessions` | `3c59c6977ac8ecd943c3e77579cda84d4bb396e7` | X            | Releasing soon |
+| SMF         | `develop`               | `0dba68d6a01e1dad050f47437647f62d40acaec6` | X            | Releasing soon |
+| NRF         | `develop`               | `0e877cb5b80a9c74fa6abca60b95e2d3d22f7a52` | X            | Releasing soon |
+| SPGW-U-TINY | `gtp_extension_header`  | `f13f4a5e2807355d23f136119f85fbf48ed569ea` | X            | Releasing soon |
 
 ## 3. Configuring Host Machines ##
 

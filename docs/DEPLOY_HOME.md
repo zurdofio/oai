@@ -14,10 +14,9 @@
 
 # Document Revision History
 
-**Last Edited** | **Editor** | **Last Reviewed** | **Reviewer** |
---------------- | ---------- | ----------------- | ------------ | 
-2021/03/15      | Sagar Arora| 2021/03/18        | Raphael      |     
-
+| Last Edited | Editor      | Last Reviewed | Reviewer |
+| ----------- | ----------- | ------------- | -------- |
+| 2021/03/22  | Sagar Arora | --            | --       |
 
 **Table of Contents**
 
@@ -25,4 +24,4 @@
 2.  [Building the Docker Images](./BUILD_IMAGES.md)
 3.  [Configuring the Containers](./CONFIGURE_CONTAINERS.md)
 4.  [Running the Network Functions](./RUN_CNF.md)
-5.  [Generating Traffic to a connected UE](./GENERATE_TRAFFIC.md)
+5.  [5G Core Network Standlone Deployment and Testing with dsTest](./DEPLOY_SA5G_WITH_DS_TESTER.md)
