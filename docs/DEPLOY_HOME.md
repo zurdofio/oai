@@ -12,6 +12,13 @@
   </tr>
 </table>
 
+# Document Revision History
+
+**Last Edited** | **Editor** | **Last Reviewed** | **Reviewer** |
+--------------- | ---------- | ----------------- | ------------ | 
+2021/03/15      | Sagar Arora| 2021/03/18        | Raphael      |     
+
+
 **Table of Contents**
 
 1.  [Pre-requisites](./DEPLOY_PRE_REQUESITES.md)

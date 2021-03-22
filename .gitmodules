@@ -7,3 +7,6 @@
 [submodule "component/oai-upf-equivalent"]
 	path = component/oai-upf-equivalent
 	url = https://github.com/OPENAIRINTERFACE/openair-spgwu-tiny.git
+[submodule "component/oai-nrf"]
+	path = component/oai-nrf
+	url = https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-nrf.git

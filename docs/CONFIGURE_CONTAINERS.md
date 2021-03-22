@@ -19,7 +19,7 @@
 2.  [Deploy](#2-deploy-the-containers)
 3.  [Configure](#3-configure-the-containers)
 
-# 1. Create a Docker Bridged Network #
+# 1. Create a Docker Bridge Network #
 
 ```bash
 $ docker network create --attachable --subnet 192.168.61.0/26 --ip-range 192.168.61.0/26 prod-oai-public-net
@@ -29,7 +29,8 @@ Once again we chose an **IDLE** IP range in our network. **Please change to prop
 
 # 2. Deploy the containers #
 
-**TODO**
+Container deployment has to follow a strict order if the `NRF` is used for `SMF` and `UPF` registration
+mysql --> oai-nrf --> oai-amf --> oai-smf --> oai-upf
 
 # 3. Configure the containers #
 
