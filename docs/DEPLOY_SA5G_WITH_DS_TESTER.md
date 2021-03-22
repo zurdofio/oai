@@ -14,8 +14,8 @@
 
 **TABLE OF CONTENTS**
 
-1.  [Pre-requisites](#1-Pre-requisites0)
-2.  [Building Container Images](./BUILD_IMAGES.md)
+1.  [Pre-requisites](#1-Pre-requisites)
+2.  [Building Container Images](#2-Building-Container-Images)
 3.  [Configuring Host Machines](#3-Configuring-Host-Machines)
 4.  [Configuring OAI 5G Core Network Functions](#4-Configuring-the-OAI-5G-Core-Network-Functions)
 5.  [Configuring dsTest Scenario](#5-Configuring-DsTester-Scenario)
@@ -42,6 +42,17 @@ The requried softwares and their respected versions are listed below. To replica
 | wireshark                  | 3.4.4 (Git commit c33f6306cbb2) |
 
 The new version of `wireshark` may not be available in the ubuntu repository so it is better to build it from source. 
+
+## 2. Building Container Images ##
+
+- In this demo the image tags and commits which were used are listed below, follow the [Building images](./BUILD_IMAGES.md) to build images with below tags. 
+
+**cNF Name** | **Branch Name** | **Commit at time of writing**              | Ubuntu18 | CentOS7 | CentOS8
+------------ | --------------- | ------------------------------------------ | -------- | ------- | -------
+AMF          | `multiple-pdu-sessions`       | `3c59c6977ac8ecd943c3e77579cda84d4bb396e7` | X        |         |  
+SMF          | `develop`       | `0dba68d6a01e1dad050f47437647f62d40acaec6` | X        |         |  
+NRF          | `develop`       | `0e877cb5b80a9c74fa6abca60b95e2d3d22f7a52` | X        |         |  
+SPGW-U-TINY  | `gtp_extension_header`       | `f13f4a5e2807355d23f136119f85fbf48ed569ea` | X        |         |  
 
 ## 3. Configuring Host Machines ##
 
@@ -309,7 +320,7 @@ Using wireshark open scenario.pcap use the filter ngap || http || pfcp || gtp
 
 - UE PDU session release request: Packet 394
 - AMF <--> SMF PDU session release request: Packet 398
-- NGreset : Packet 473!
+- NGreset : Packet 473
 
 ![Scenario execution 2](./images/scenario-2.png)
 
@@ -318,6 +329,3 @@ Using wireshark open scenario.pcap use the filter ngap || http || pfcp || gtp
 ## 9. Demo Video ##
 
 - Releasing soon on OAI youtube channel, don't miss it
-
-
-
