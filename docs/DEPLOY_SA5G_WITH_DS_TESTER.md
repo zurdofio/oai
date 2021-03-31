@@ -7,13 +7,13 @@
       </a>
     </td>
     <td style="border-collapse: collapse; border: none; vertical-align: center;">
-      <b><font size = "5">OpenAirInterface 5G Core Network Standlone Deployment and Testing with dsTest</font></b>
+      <b><font size = "5">OpenAirInterface 5G Core Network Deployment and Testing with dsTest</font></b>
     </td>
   </tr>
 </table>
 
 
-![SA dsTest Demo](./images/5gCN.png)
+![SA dsTest Demo](./images/5gCN.jpg)
 
 **TABLE OF CONTENTS**
 
@@ -26,6 +26,7 @@
 7.  [Executing dsTest Scenario](#7-executing-the-dstest-scenario)
 8.  [Analysing Scenario Results](#8-analysing-the-scenario-results)
 9.  [Demo Video](#9-demo-video)
+10. [Note](#10-note)
 
 ## 1. Pre-requisites ##
 
@@ -52,14 +53,14 @@ The new version of `wireshark` may not be available in the ubuntu repository so 
 
 | CNF Name    | Branch Name             | Commit at time of writing                  | Ubuntu 18.04 | RHEL8          |
 | ----------- |:----------------------- | ------------------------------------------ | ------------ | ---------------|
-| AMF         | `multiple-pdu-sessions` | `3c59c6977ac8ecd943c3e77579cda84d4bb396e7` | X            | Releasing soon |
+| AMF         | `develop`               | `82ca64fe8d79dbadbb1a495124ee26352f81bd7a` | X            | Releasing soon |
 | SMF         | `develop`               | `0dba68d6a01e1dad050f47437647f62d40acaec6` | X            | Releasing soon |
 | NRF         | `develop`               | `0e877cb5b80a9c74fa6abca60b95e2d3d22f7a52` | X            | Releasing soon |
 | SPGW-U-TINY | `gtp_extension_header`  | `f13f4a5e2807355d23f136119f85fbf48ed569ea` | X            | Releasing soon |
 
 ## 3. Configuring Host Machines ##
 
-- The `docker-compose-host` machine needs to be configured with `demo-oai-public-net` bridge before deploying core network components. To capture initial message exchange between smf<-->nrf<-->upf. Though the bridge can be automatically created using docker-compose file if there is no need to capture initial packets. 
+- The `docker-compose-host` machine needs to be configured with `demo-oai-public-net` bridge before deploying core network components. To capture initial message exchange between smf<-->nrf<-->upf. 
 
     ```bash
     (docker-compose-host)$ docker network create \
@@ -81,6 +82,21 @@ The new version of `wireshark` may not be available in the ubuntu repository so 
     d2d34e05bb2d        bridge                bridge              local
     455631b3749c        demo-oai-public-net   bridge              local
     ```
+- Optional, Though the bridge can be automatically created using docker-compose file if there is no need to capture initial packets. Uncomment the last lines of the [docker-compose.yaml](../docker-compose/docker-compose.yaml) or docker-compose-no-nrf.yaml. Else replace with below section
+
+    ```
+    networks:
+          public_net:
+              driver: bridge
+              name: demo-oai-public-net
+              ipam:
+                  config:
+                      - subnet: 192.168.70.128/26
+              driver_opts:
+                  com.docker.network.bridge.name: "demo-oai"
+    ```
+
+
 - Optional, if the `docker-compose-host` machine is not configured with packet forwarding then it can be done using below command, 
 
     ```bash
@@ -113,14 +129,14 @@ The new version of `wireshark` may not be available in the ubuntu repository so 
     
 ## 4. Configuring the OAI-5G Core Network Functions ##
 
-- **Core Network Configuration**: The docker-compose file has configuration parameters of each core network component. The file is pre-configured with parameters related to this scenario. The table contains the location of the configuration files. These files contains allowed configurable parameters. Keep checking this file it is possible that we will add new parameters for new features.  
+- **Core Network Configuration**: The docker-compose file has configuration parameters of each core network component. The file is pre-configured with parameters related to this scenario. The table contains the location of the configuration files. These files contains allowed configurable parameters. **Keep checking this file it is possible that we will add new parameters for new features.**  
 
     | File Name   | Repository                                   | Location        |
     |:----------- |:-------------------------------------------- |:--------------- |
-    | amf.conf    | (Gitlab) cn5g/oai-cn5g-amf                   | etc/amf.conf    |
-    | smf.conf    | (Gitlab) cn5g/oai-cn5g-smf                   | etc/smf.conf    |
-    | nrf.conf    | (Gilab) cn5g/oai-cn5g-nrf                    | etc/nrf.conf    |
-    | spgw_u.conf | (Github) OPENAIRINTERFACE/openair-spgwu-tiny | etc/spgw_u.conf |
+    | amf.conf    | (Gitlab) cn5g/oai-cn5g-amf                   | [etc/amf.conf](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-amf/-/blob/develop/etc/amf.conf)    |
+    | smf.conf    | (Gitlab) cn5g/oai-cn5g-smf                   | [etc/smf.conf](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-smf/-/blob/develop/etc/smf.conf)    |
+    | nrf.conf    | (Gilab) cn5g/oai-cn5g-nrf                    | [etc/nrf.conf](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-nrf/-/blob/develop/etc/nrf.conf)   |
+    | spgw_u.conf | (Github) OPENAIRINTERFACE/openair-spgwu-tiny | [etc/spgw_u.conf](https://github.com/OPENAIRINTERFACE/openair-spgwu-tiny/blob/gtp_extension_header/etc/spgw_u.conf) |
 
 
 - **User Subscprition Profile**: The dsTest UE which will request for a PDU session will have this user profile. Verify that this entry is present in the oai_db.sql file located in docker-compose/oai-db.sql.  
@@ -171,9 +187,9 @@ The new version of `wireshark` may not be available in the ubuntu repository so 
 
 ## 6. Deploying OAI 5g Core Network ##
 
-- The core network is deployed using a bash script which is a wrapper around `docker-compose` and `docker` command. 
+- The core network is deployed using a [bash script](../docker-compose/core-network.sh) which is a wrapper around `docker-compose` and `docker` command. 
 - The script informs the user when the core-network is correctly configured by checking health status of containers and connectivity between different core network components.
-- If the script is executed without any arguments then its usage can be seen 
+- If the script is executed without any arguments then the helper menu is visible 
 
     ```bash
     (docker-compose-host)$ pwd
@@ -280,14 +296,14 @@ This section is subdivided in two parts the first part for analysing the message
 
 
 
-| Pcap/log files       |
-| -------------------- |
-| 5gcn-deployment.pcap |
-| dsTestscenario.pcap  |
-| amf.log              |
-| smf.log              |
-| nrf.log              |
-| spgwu.log            |
+| Pcap/log files                                                    |
+|:----------------------------------------------------------------- |
+| [5gcn-deployment.pcap](./results/pcap/5gcn-deployment.pcap)       |
+| [scenario-execution.pcap](./results/pcap/scenario-execution.pcap) |
+| [amf.log](./results/logs/amf.log)                                 |
+| [smf.log](./results/logs/smf.log)                                 |
+| [nrf.log](./results/logs/nrf.log)                                 |
+| [spgwu.log](./results/logs/spgwu.log)                             |
 
 
 ### Analysing initial message exchange
@@ -306,7 +322,7 @@ Using wireshark open 5gcn-deployment.pcap use the filter http || pfcp
 
 ### Analysing scenario execution
 
-Using wireshark open scenario.pcap use the filter ngap || http || pfcp || gtp
+Using wireshark open scenario-execution.pcap use the filter ngap || http || pfcp || gtp
 
 - NG Setup request reponse: Packet 19,21
 - Initial UE Message registration request: Packet 23
@@ -328,7 +344,14 @@ Using wireshark open scenario.pcap use the filter ngap || http || pfcp || gtp
 ![Scenario execution 2](./images/scenario-2.png)
 
 
-
 ## 9. Demo Video ##
 
 - Releasing soon on OAI youtube channel, don't miss it
+
+## 10. Notes ##
+
+- The `oai-ext-dn` container is optional and is only required if the user wants to ping the dsTest UE. In general this container is not required except for testing purposes. 
+- There is a possibility to perform the same test or setup the core network without nrf by using `docker-compose/docker-compose-no-nrf.yaml`. Check the configuration before using the compose file. 
+- This tutorial can be taken as reference to test the OAI 5G core with a COTS UE. The configuration files has to be changed according to the gNB and COTS UE information should be present in the mysql database. 
+- Generally, in a COTS UE two PDN sessions are created by default so configure the IMS in SMF properly. Currently some parameters can not be configured via [docker-compose.yaml](../docker-compose/docker-compose.yaml). We recommend you directly configure them in the conf file and mount the file in the docker during run time. 
+- Its not necessary to use ./core-network.sh script you can directly deploy using `docker-compose` command

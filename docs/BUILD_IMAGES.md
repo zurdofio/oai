@@ -14,16 +14,12 @@
 
 # 1.  Retrieve the correct network function branches #
 
- * TODO Limited attach
- * TODO4G SPGW-U as UPF
-
-
-**CNF Name** | **Branch Name**        | **Commit at time of writing**              | Ubuntu 18.04 | RHEL8          | 
------------- | -----------------------|--------------------------------------------| -------------| -------------- |
-AMF          | `develop`              | `fb06701a29a964d9c9822d0eda3792208194519d` | X            | Releasing Soon |  
-SMF          | `develop`              | `0dba68d6a01e1dad050f47437647f62d40acaec6` | X            | Releasing Soon |  
-NRF          | `develop`              | `0e877cb5b80a9c74fa6abca60b95e2d3d22f7a52` | X            | Releasing Soon |  
-SPGW-U-TINY  | `gtp_extension_header` | `f13f4a5e2807355d23f136119f85fbf48ed569ea` | X            | Releasing Soon |  
+| CNF Name    | Branch Name             | Commit at time of writing                  | Ubuntu 18.04 | RHEL8          |
+| ----------- |:----------------------- | ------------------------------------------ | ------------ | ---------------|
+| AMF         | `develop`               | `82ca64fe8d79dbadbb1a495124ee26352f81bd7a` | X            | Releasing soon |
+| SMF         | `develop`               | `0dba68d6a01e1dad050f47437647f62d40acaec6` | X            | Releasing soon |
+| NRF         | `develop`               | `0e877cb5b80a9c74fa6abca60b95e2d3d22f7a52` | X            | Releasing soon |
+| SPGW-U-TINY | `gtp_extension_header`  | `f13f4a5e2807355d23f136119f85fbf48ed569ea` | X            | Releasing soon |
 
 ```bash
 $ git clone https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed.git
