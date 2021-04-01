@@ -47,6 +47,8 @@ The requried softwares and their respected versions are listed below. To replica
 
 The new version of `wireshark` may not be available in the ubuntu repository so it is better to build it from source. 
 
+To know how to configure the machine with the above requirements vist [pre-requisites](./DEPLOY_PRE_REQUESITES.md) page. 
+
 ## 2. Building Container Images ##
 
 - In this demo the image tags and commits which were used are listed below, follow the [Building images](./BUILD_IMAGES.md) to build images with below tags. 
@@ -347,7 +349,7 @@ Using wireshark open scenario-execution.pcap use the filter ngap || http || pfcp
 
 ## 9. Demo Video ##
 
-- Releasing soon on OAI youtube channel, don't miss it
+- Here is the link to the [youtube video](https://www.youtube.com/watch?v=ENQiwl2EYl8) 
 
 ## 10. Notes ##
 

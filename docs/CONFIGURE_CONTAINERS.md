@@ -30,7 +30,7 @@
     | spgw_u.conf | (Github) OPENAIRINTERFACE/openair-spgwu-tiny | [etc/spgw_u.conf](https://github.com/OPENAIRINTERFACE/openair-spgwu-tiny/blob/gtp_extension_header/etc/spgw_u.conf) |
 
 - The PLMN, TAC, Operator Key should be properly configured in amf.conf according to gNB and UE
-- In case of a COTS UE by default there are two PDN sessions so check the smf.conf to configure the right names for the IMS. Currently some parameters can not be configured via docker-compose.yaml. We recommend you directly configure them in the conf file and mount the file in the docker during run time. 
+- In case of a **COTS UE** by default there are two PDN sessions so check the smf.conf to configure the right names for the IMS. Currently some parameters can not be configured via docker-compose.yaml. We recommend you directly configure them in the conf file and mount the file in the docker during run time. 
     ```
     ## Configure here
         DNN_LIST = (
@@ -138,3 +138,4 @@ components. To capture initial message exchange between smf<-->nrf<-->upf.
     455631b3749c        demo-oai-public-net   bridge              local
     ```
 
+You are ready to check out the tutorial that [how 5g core works](./DEPLOY_SA5G_WITH_DS_TESTER.md).
