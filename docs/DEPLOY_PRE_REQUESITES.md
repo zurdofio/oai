@@ -14,7 +14,6 @@
 
 # 1. Install the proper version of Docker #
 
-At time of writing (2020 / 09 / 22):
 
 ```bash
 $ dpkg --list | grep docker

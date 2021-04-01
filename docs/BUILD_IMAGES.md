@@ -7,34 +7,62 @@
       </a>
     </td>
     <td style="border-collapse: collapse; border: none; vertical-align: center;">
-      <b><font size = "5">OpenAirInterface 5G Core Network Docker Deployment : Building the Images</font></b>
+      <b><font size = "5">OpenAirInterface 5G Core Network Docker Deployment : Building Container Images</font></b>
     </td>
   </tr>
 </table>
 
-# 1.  Retrieve the proper code version #
+# 1.  Retrieve the correct network function branches #
 
-At the time of writing (2020 / 09 / 23), this is the current state:
-
- * Limited attach
- * We are using our 4G SPGW-U as UPF
-
-**cNF Name** | **Branch Name** | **Commit at time of writing**              | Ubuntu18 | CentOS7 | CentOS8
------------- | --------------- | ------------------------------------------ | -------- | ------- | -------
-AMF          | `develop`       | `8341c82073923601091f59803fe6c066cd8a68d8` | X        |         |  
-SMF          | `develop`       | `e43b4429ce0eb8e754dd2bfbaa2c620cfa36ac49` | X        |         |  
-SPGW-U-TINY  | `develop`       | `e812920bc48dcedb0e8f3811f3dbbe2ebebeb899` | X        |         |  
+| CNF Name    | Branch Name             | Commit at time of writing                  | Ubuntu 18.04 | RHEL8          |
+| ----------- |:----------------------- | ------------------------------------------ | ------------ | ---------------|
+| AMF         | `develop`               | `82ca64fe8d79dbadbb1a495124ee26352f81bd7a` | X            | Releasing soon |
+| SMF         | `develop`               | `0dba68d6a01e1dad050f47437647f62d40acaec6` | X            | Releasing soon |
+| NRF         | `develop`               | `0e877cb5b80a9c74fa6abca60b95e2d3d22f7a52` | X            | Releasing soon |
+| SPGW-U-TINY | `gtp_extension_header`  | `f13f4a5e2807355d23f136119f85fbf48ed569ea` | X            | Releasing soon |
 
 ```bash
 $ git clone https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed.git
 $ cd oai-cn5g-fed
 $ git checkout master
 $ git pull origin master
-$ ./scripts/syncComponents.sh
+$ ./scripts/syncComponents.sh -h
+Openair-CN components synchronization
+   Original Author: Raphael Defosseux
+
+   Requirement: git shall be installed
+
+   By default (no options) all components will be synchronized to
+     the 'develop' branch.
+   Each component can be synchronized a dedicated branch.
+
+Usage:
+------
+    syncComponents.sh [OPTIONS]
+
+Options:
+--------
+    --nrf-branch ####
+    Specify the source branch for the OAI-NRF component
+
+    --amf-branch ####
+    Specify the source branch for the OAI-AMF component
+
+    --smf-branch ####
+    Specify the source branch for the OAI-SMF component
+
+    --spgwu-tiny-branch ####
+    Specify the source branch for the OAI-SPGW-U-TINY component
+
+    --help OR -h
+    Print this help message.
+
+$ ./scripts/syncComponents.sh --spgwu-tiny-branch gtp_extension_header
 ---------------------------------------------------------
 OAI-AMF    component branch : develop
 OAI-SMF    component branch : develop
-OAI-SPGW-U component branch : develop
+OAI-NRF    component branch : develop
+OAI-SPGW-U component branch : gtp_extension_header
 ---------------------------------------------------------
 ....
 ```
@@ -51,13 +79,13 @@ Here in our network configuration, we need to pass the "GIT PROXY" configuration
 ## 3.1 On a Ubuntu 18.04 Host ##
 
 ```bash
-$ docker build --target oai-amf --tag oai-amf:production \
+$ docker build --target oai-amf --tag oai-amf:develop \
                --file component/oai-amf/docker/Dockerfile.ubuntu.18.04 \
                --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
                component/oai-amf
 $ docker image prune --force
 $ docker image ls
-oai-amf                 production             f478bafd7a06        1 minute ago          258MB
+oai-amf                 develop             f478bafd7a06        1 minute ago          258MB
 ...
 ```
 
@@ -66,27 +94,42 @@ oai-amf                 production             f478bafd7a06        1 minute ago 
 ## 4.1 On a Ubuntu 18.04 Host ##
 
 ```bash
-$ docker build --target oai-smf --tag oai-smf:production \
+$ docker build --target oai-smf --tag oai-smf:develop \
                --file component/oai-smf/docker/Dockerfile.ubuntu.18.04 \
                --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
                component/oai-smf
 $ docker image prune --force
 $ docker image ls
-oai-smf                 production             f478bafd7a06        1 minute ago          274MB
+oai-smf                 develop             f478bafd7a06        1 minute ago          274MB
 ...
 ```
 
-# 5. Build SPGW-U Image #
+# 5. Build NRF Image #
 
 ## 5.1 On a Ubuntu 18.04 Host ##
 
 ```bash
-$ docker build --target oai-spgwu-tiny --tag oai-spgwu-tiny:production \
+$ docker build --target oai-nrf --tag oai-nrf:develop \
+               --file component/oai-nrf/ci-scripts/Dockerfile.ubuntu18.04 \
+               --build-arg EURECOM_PROXY="http://proxy.eurecom.fr:8080" component/oai-nrf
+$ docker image prune --force
+$ docker image ls
+oai-nrf                 develop             04334b29e103        1 minute ago          280MB
+...
+```
+
+
+# 6. Build SPGW-U Image #
+
+## 6.1 On a Ubuntu 18.04 Host ##
+
+```bash
+$ docker build --target oai-spgwu-tiny --tag oai-spgwu-tiny:gtp-ext-header \
                --file component/oai-upf-equivalent/ci-scripts/Dockerfile.ubuntu18.04 \
                --build-arg EURECOM_PROXY="http://proxy.eurecom.fr:8080" component/oai-upf-equivalent
 $ docker image prune --force
 $ docker image ls
-oai-spgwu-tiny          production             588e14481f2b        1 minute ago          220MB
+oai-spgwu-tiny          gtp-ext-header             dec6311cef3b        1 minute ago          255MB
 ...
 ```
 
