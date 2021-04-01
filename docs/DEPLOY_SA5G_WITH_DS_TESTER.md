@@ -26,7 +26,7 @@
 7.  [Executing dsTest Scenario](#7-executing-the-dstest-scenario)
 8.  [Analysing Scenario Results](#8-analysing-the-scenario-results)
 9.  [Demo Video](#9-demo-video)
-10. [Note](#10-note)
+10. [Notes](#10-notes)
 
 ## 1. Pre-requisites ##
 
@@ -189,6 +189,7 @@ The new version of `wireshark` may not be available in the ubuntu repository so 
 
 - The core network is deployed using a [bash script](../docker-compose/core-network.sh) which is a wrapper around `docker-compose` and `docker` command. 
 - The script informs the user when the core-network is correctly configured by checking health status of containers and connectivity between different core network components.
+- In case if there is a problem in using the script then use docker-compose manually read the [notes section](#10-notes)
 - If the script is executed without any arguments then the helper menu is visible 
 
     ```bash
@@ -296,14 +297,14 @@ This section is subdivided in two parts the first part for analysing the message
 
 
 
-| Pcap/log files                                                    |
-|:----------------------------------------------------------------- |
-| [5gcn-deployment.pcap](./results/pcap/5gcn-deployment.pcap)       |
-| [scenario-execution.pcap](./results/pcap/scenario-execution.pcap) |
-| [amf.log](./results/logs/amf.log)                                 |
-| [smf.log](./results/logs/smf.log)                                 |
-| [nrf.log](./results/logs/nrf.log)                                 |
-| [spgwu.log](./results/logs/spgwu.log)                             |
+| Pcap/log files                                                                             |
+|:------------------------------------------------------------------------------------------ |
+| [5gcn-deployment.pcap](./results/pcap/5gcn-deployment.pcap)                                |
+| [scenario-execution.pcap](./results/pcap/scenario-execution.pcap)                          |
+| [amf.log](./results/logs/amf.log), [initialmessage.log](./results/logs/initialmessage.log) |
+| [smf.log](./results/logs/smf.log)                                                          |
+| [nrf.log](./results/logs/nrf.log)                                                          |
+| [spgwu.log](./results/logs/spgwu.log)                                                      |
 
 
 ### Analysing initial message exchange
@@ -354,4 +355,13 @@ Using wireshark open scenario-execution.pcap use the filter ngap || http || pfcp
 - There is a possibility to perform the same test or setup the core network without nrf by using `docker-compose/docker-compose-no-nrf.yaml`. Check the configuration before using the compose file. 
 - This tutorial can be taken as reference to test the OAI 5G core with a COTS UE. The configuration files has to be changed according to the gNB and COTS UE information should be present in the mysql database. 
 - Generally, in a COTS UE two PDN sessions are created by default so configure the IMS in SMF properly. Currently some parameters can not be configured via [docker-compose.yaml](../docker-compose/docker-compose.yaml). We recommend you directly configure them in the conf file and mount the file in the docker during run time. 
-- Its not necessary to use ./core-network.sh script you can directly deploy using `docker-compose` command
+- Its not necessary to use [core-network.sh](../docker-compose/core-network.sh) bash script, it is possible to directly deploy using `docker-compose` command
+
+    ```
+    #To start the containers 
+    docker-compose -f <file-name> -p <project-name> up -d
+    #To check their health status
+    docker-compose -f <file-name> -p <project-name> ps -a
+    #To stop the containers 
+    docker-compose -f <file-name> -p <project-name> down
+    ```

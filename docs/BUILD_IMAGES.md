@@ -79,13 +79,13 @@ Here in our network configuration, we need to pass the "GIT PROXY" configuration
 ## 3.1 On a Ubuntu 18.04 Host ##
 
 ```bash
-$ docker build --target oai-amf --tag oai-amf:production \
+$ docker build --target oai-amf --tag oai-amf:develop \
                --file component/oai-amf/docker/Dockerfile.ubuntu.18.04 \
                --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
                component/oai-amf
 $ docker image prune --force
 $ docker image ls
-oai-amf                 production             f478bafd7a06        1 minute ago          258MB
+oai-amf                 develop             f478bafd7a06        1 minute ago          258MB
 ...
 ```
 
@@ -94,13 +94,13 @@ oai-amf                 production             f478bafd7a06        1 minute ago 
 ## 4.1 On a Ubuntu 18.04 Host ##
 
 ```bash
-$ docker build --target oai-smf --tag oai-smf:production \
+$ docker build --target oai-smf --tag oai-smf:develop \
                --file component/oai-smf/docker/Dockerfile.ubuntu.18.04 \
                --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
                component/oai-smf
 $ docker image prune --force
 $ docker image ls
-oai-smf                 production             f478bafd7a06        1 minute ago          274MB
+oai-smf                 develop             f478bafd7a06        1 minute ago          274MB
 ...
 ```
 
@@ -109,12 +109,12 @@ oai-smf                 production             f478bafd7a06        1 minute ago 
 ## 5.1 On a Ubuntu 18.04 Host ##
 
 ```bash
-$ docker build --target oai-nrf --tag oai-nrf:production \
+$ docker build --target oai-nrf --tag oai-nrf:develop \
                --file component/oai-nrf/ci-scripts/Dockerfile.ubuntu18.04 \
                --build-arg EURECOM_PROXY="http://proxy.eurecom.fr:8080" component/oai-nrf
 $ docker image prune --force
 $ docker image ls
-oai-nrf                 production             04334b29e103        1 minute ago          280MB
+oai-nrf                 develop             04334b29e103        1 minute ago          280MB
 ...
 ```
 
@@ -124,12 +124,12 @@ oai-nrf                 production             04334b29e103        1 minute ago 
 ## 6.1 On a Ubuntu 18.04 Host ##
 
 ```bash
-$ docker build --target oai-spgwu-tiny --tag oai-spgwu-tiny:production \
+$ docker build --target oai-spgwu-tiny --tag oai-spgwu-tiny:gtp-ext-header \
                --file component/oai-upf-equivalent/ci-scripts/Dockerfile.ubuntu18.04 \
                --build-arg EURECOM_PROXY="http://proxy.eurecom.fr:8080" component/oai-upf-equivalent
 $ docker image prune --force
 $ docker image ls
-oai-spgwu-tiny          production             dec6311cef3b        1 minute ago          255MB
+oai-spgwu-tiny          gtp-ext-header             dec6311cef3b        1 minute ago          255MB
 ...
 ```
 

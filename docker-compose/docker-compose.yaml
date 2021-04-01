@@ -139,7 +139,7 @@ services:
                 ipv4_address: 192.168.70.133
     oai-spgwu:
         container_name: "oai-spgwu"
-        image: oai-spgwu:gtp-ext-header
+        image: oai-spgwu-tiny:gtp-ext-header
         environment:
             - TZ=Europe/Paris
             - PID_DIRECTORY=/var/run
