@@ -58,7 +58,7 @@ To know how to configure the machine with the above requirements vist [pre-requi
 | AMF         | `develop`               | `82ca64fe8d79dbadbb1a495124ee26352f81bd7a` | X            | Releasing soon |
 | SMF         | `develop`               | `0dba68d6a01e1dad050f47437647f62d40acaec6` | X            | Releasing soon |
 | NRF         | `develop`               | `0e877cb5b80a9c74fa6abca60b95e2d3d22f7a52` | X            | Releasing soon |
-| SPGW-U-TINY | `gtp_extension_header`  | `f13f4a5e2807355d23f136119f85fbf48ed569ea` | X            | Releasing soon |
+| SPGW-U-TINY | `gtp_extension_header`  | `b628036d2e6060da8ba77c5e4cdde35bf18a62a5` | X            | Releasing soon |
 
 ## 3. Configuring Host Machines ##
 

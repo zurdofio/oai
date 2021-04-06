@@ -19,7 +19,7 @@
 | AMF         | `develop`               | `82ca64fe8d79dbadbb1a495124ee26352f81bd7a` | X            | Releasing soon |
 | SMF         | `develop`               | `0dba68d6a01e1dad050f47437647f62d40acaec6` | X            | Releasing soon |
 | NRF         | `develop`               | `0e877cb5b80a9c74fa6abca60b95e2d3d22f7a52` | X            | Releasing soon |
-| SPGW-U-TINY | `gtp_extension_header`  | `f13f4a5e2807355d23f136119f85fbf48ed569ea` | X            | Releasing soon |
+| SPGW-U-TINY | `gtp_extension_header`  | `b628036d2e6060da8ba77c5e4cdde35bf18a62a5` | X            | Releasing soon |
 
 ```bash
 $ git clone https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed.git
@@ -110,7 +110,7 @@ oai-smf                 develop             f478bafd7a06        1 minute ago    
 
 ```bash
 $ docker build --target oai-nrf --tag oai-nrf:develop \
-               --file component/oai-nrf/ci-scripts/Dockerfile.ubuntu18.04 \
+               --file component/oai-nrf/docker/Dockerfile.ubuntu.18.04 \
                --build-arg EURECOM_PROXY="http://proxy.eurecom.fr:8080" component/oai-nrf
 $ docker image prune --force
 $ docker image ls
@@ -125,7 +125,7 @@ oai-nrf                 develop             04334b29e103        1 minute ago    
 
 ```bash
 $ docker build --target oai-spgwu-tiny --tag oai-spgwu-tiny:gtp-ext-header \
-               --file component/oai-upf-equivalent/ci-scripts/Dockerfile.ubuntu18.04 \
+               --file component/oai-upf-equivalent/docker/Dockerfile.ubuntu18.04 \
                --build-arg EURECOM_PROXY="http://proxy.eurecom.fr:8080" component/oai-upf-equivalent
 $ docker image prune --force
 $ docker image ls
