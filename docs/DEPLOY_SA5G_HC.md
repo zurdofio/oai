@@ -84,7 +84,8 @@ The current networking configuration and static ip-address for the network funct
 
 Refer the below diagram to understand the networking, 
 
-![Helm Chart Deployment](helm_diag.png)
+![Helm Chart Deployment](./images/helm_diag.png)
+
 
 
 NOTE: Kubernetes service name (FQDN) can not be used in place of ip-address. It is recommend to give ip-address. 
