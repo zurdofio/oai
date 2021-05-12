@@ -36,7 +36,7 @@ The cluster on which these helm charts will be deployed should have RBAC and [Mu
 
 ## 2. Building Images
 
-The base image used by network function is dependent on the operating system it will be running on. If it is a debian (ubuntu) based cluster then build base image will be ubuntu. If it is a rpm (core-os) based cluster then build base images will ubi. Follow the links to build images depending on the cluster/worker-node operating system. 
+The base image used by network function is dependent on the operating system it will be running on. If it is a debian (ubuntu) based cluster then build base image will be ubuntu. If it is a rpm (core-os) based cluster then build base images will ubi. [Build images](./BUILD_IMAGES.md) depending on the cluster/worker-node operating system. 
 
 ## 3. Configuring Helm Charts
 
