@@ -80,7 +80,7 @@ config:
   smfIpv4Addr0: "0.0.0.0"
   smfHttpVersion0: "v1"
   smfInstanceId1: "2"
-  smfIpv4Addr1: "oai-smf-sa"
+  smfIpv4Addr1: "127.0.0.1"
   smfHttpVersion1: "v1"
   nrfIpv4Addr: "192.168.18.178"
   nrfPort: 80
