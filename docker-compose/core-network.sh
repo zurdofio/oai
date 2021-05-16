@@ -20,6 +20,9 @@ if [[ $1 == 'start' ]]; then
 	if [[ $2 == 'nrf' ]]; then
 		echo -e "${BLUE}Starting 5gcn components in the order nrf, mysql, amf, smf, spgwu${NC}..."
 		docker-compose -f docker-compose.yaml -p 5gcn up -d
+	elif [[ $2 == 'gnbsim' ]]; then
+		echo -e "${BLUE}Starting 5gcn components in the order nrf, mysql, amf, smf, spgwu${NC}..."
+		docker-compose -f docker-compose-gnbsim.yaml -p gnbsim up -d
 	else
 		echo -e "${BLUE}Starting 5gcn components in the order mysql, amf, smf, spgwu${NC}..."
 		docker-compose -f docker-compose-no-nrf.yaml -p 5gcn up -d

@@ -95,7 +95,7 @@ oai-amf                 develop             f478bafd7a06        1 minute ago    
 
 ```bash
 $ docker build --target oai-smf --tag oai-smf:develop \
-               --file component/oai-smf/docker/Dockerfile.ubuntu.18.04 \
+               --file component/oai-smf/docker/Dockerfile.ubuntu18.04 \
                --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
                component/oai-smf
 $ docker image prune --force
