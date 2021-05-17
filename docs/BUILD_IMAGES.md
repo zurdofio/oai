@@ -14,12 +14,12 @@
 
 # 1.  Retrieve the correct network function branches #
 
-| CNF Name    | Branch Name             | Commit at time of writing                  | Ubuntu 18.04 | RHEL8          |
-| ----------- |:----------------------- | ------------------------------------------ | ------------ | ---------------|
-| AMF         | `develop`               | `82ca64fe8d79dbadbb1a495124ee26352f81bd7a` | X            | Releasing soon |
-| SMF         | `develop`               | `0dba68d6a01e1dad050f47437647f62d40acaec6` | X            | Releasing soon |
-| NRF         | `develop`               | `0e877cb5b80a9c74fa6abca60b95e2d3d22f7a52` | X            | Releasing soon |
-| SPGW-U-TINY | `gtp_extension_header`  | `b628036d2e6060da8ba77c5e4cdde35bf18a62a5` | X            | Releasing soon |
+| CNF Name    | Branch Name             | Commit at time of writing                  | Ubuntu 18.04 | RHEL8 (UBI8)    |
+| ----------- |:----------------------- | ------------------------------------------ | ------------ | ----------------|
+| AMF         | `develop`               | `1a9f65c6a1e1846b13b82ad337a965596565fdfe` | X            | X               |
+| SMF         | `develop`               | `11d6375c4ac408805f294172cc789cd196a75dc6` | X            | X               |
+| NRF         | `develop`               | `a221f39c9d9729d0652042aee918c81b23d95de6` | X            | X               |
+| SPGW-U-TINY | `gtp_extension_header`  | `3898c773f91bb21451d8a9d4ef8e3d06ab184e1d` | X            | -               |
 
 ```bash
 $ git clone https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed.git
@@ -89,6 +89,21 @@ oai-amf                 develop             f478bafd7a06        1 minute ago    
 ...
 ```
 
+## 3.2 On a RHEL8 Host ##
+
+RHEL base images generally needs a subscription to access the package repository. For that the base image needs ca and entitlement .pem files. Copy the ca and entitlement .pem files in the oai-amf repository in a new folder name tmp before building the image. 
+
+```bash
+$ sudo podman build --target oai-amf --tag oai-amf:develop \
+               --file component/oai-amf/docker/Dockerfile.amf.rhel8.2 \
+               --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
+               component/oai-amf
+...
+```
+
+The above command is with podman, incase of docker it can be changed with its docker equivalent. 
+
+
 # 4. Build SMF Image #
 
 ## 4.1 On a Ubuntu 18.04 Host ##
@@ -104,6 +119,22 @@ oai-smf                 develop             f478bafd7a06        1 minute ago    
 ...
 ```
 
+## 4.2 On a RHEL8 Host ##
+
+RHEL base images generally needs a subscription to access the package repository. For that the base image needs ca and entitlement .pem files. Copy the ca and entitlement .pem files in the oai-smf repository in a new folder name tmp before building the image. 
+
+```bash
+$ sudo podman build --target oai-smf --tag oai-smf:develop \
+               --file component/oai-smf/docker/Dockerfile.smf.rhel8.2 \
+               --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
+               component/oai-smf
+...
+```
+
+The above command is with podman, incase of docker it can be changed with its docker equivalent. 
+
+
+
 # 5. Build NRF Image #
 
 ## 5.1 On a Ubuntu 18.04 Host ##
@@ -117,6 +148,21 @@ $ docker image ls
 oai-nrf                 develop             04334b29e103        1 minute ago          280MB
 ...
 ```
+
+## 5.2 On a RHEL8 Host ##
+
+RHEL base images generally needs a subscription to access the package repository. For that the base image needs ca and entitlement .pem files. Copy the ca and entitlement .pem files in the oai-nrf repository in a new folder name tmp before building the image. 
+
+```bash
+$ sudo podman build --target oai-nrf --tag oai-nrf:develop \
+               --file component/oai-nrf/docker/Dockerfile.nrf.rhel8.2 \
+               --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
+               component/oai-nrf
+...
+```
+
+The above command is with podman, incase of docker it can be changed with its docker equivalent. 
+
 
 
 # 6. Build SPGW-U Image #
@@ -133,4 +179,18 @@ oai-spgwu-tiny          gtp-ext-header             dec6311cef3b        1 minute 
 ...
 ```
 
-You are ready to [Configure the Containers](./CONFIGURE_CONTAINERS.md).
+## 6.2 On a RHEL8 Host ##
+
+RHEL base images generally needs a subscription to access the package repository. For that the base image needs ca and entitlement .pem files. Copy the ca and entitlement .pem files in the oai-spgwu repository in a new folder name tmp before building the image. 
+
+```bash
+$ sudo podman build --target oai-spgwu-tiny --tag oai-spgwu-tiny:develop \
+               --file component/oai-spgwu-tiny/docker/Dockerfile.centos8 \
+               --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
+               component/oai-upf-equivalent
+...
+```
+
+The above command is with podman, incase of docker it can be changed with its docker equivalent. 
+
+You are ready to [Configure the Containers](./CONFIGURE_CONTAINERS.md) or deploying the images using [helm-charts] (./DEPLOY_SA5G_HC.md)
