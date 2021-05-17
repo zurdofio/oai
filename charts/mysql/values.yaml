@@ -1,8 +1,8 @@
 # mysql image version
 ## ref: https://hub.docker.com/r/library/mysql/tags/
 ##
-image: "mysql"
-imageTag: "5.7.30"
+image: "image-registry.openshift-image-registry.svc:5000/oaicicd-tmp/mysql-internal"
+imageTag: "TAG"
 
 strategy:
   type: Recreate

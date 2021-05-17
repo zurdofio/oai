@@ -35,6 +35,7 @@ def sendSocialMediaMessage(pipeChannel, pipeColor, pipeMessage) {
 def cn_ci_host = params.Host_CN_CI_Server
 
 // for lock
+def cn_ci_resource = params.CN_CI_Resource
 def ds_tester_ci_resource = params.DsTester
 
 // Location of the DsTester workspace
@@ -81,10 +82,12 @@ pipeline {
           JOB_TIMESTAMP = JOB_TIMESTAMP.trim()
 
           def allParametersPresent = true
-          if (params.eNB_IPAddress == null) {
+          if (params.remote_IPAddress == null) {
             allParametersPresent = false
-          if (params.eNB_Credentials == null) {
+          }
+          if (params.remote_Credentials == null) {
             allParametersPresent = false
+          }
           if (params.OC_Credentials == null) {
             allParametersPresent = false
           }
@@ -100,7 +103,7 @@ pipeline {
           if (params.DS_Tester_Server_Flag != null) {
             dsT_host_flag = params.DS_Tester_Server_Flag
             if (dsT_host_flag) {
-              def allParametersPresent = true
+              allParametersPresent = true
               if (params.DS_Tester_Server_Name == null) {
                 allParametersPresent = false
               } else {
@@ -134,7 +137,7 @@ pipeline {
             }
           }
           withCredentials([
-            [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.eNB_Credentials}", usernameVariable: 'eNB_Username', passwordVariable: 'eNB_Password'],
+            [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.remote_Credentials}", usernameVariable: 'remote_Username', passwordVariable: 'remote_Password'],
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.OC_Credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
           ]) {
             if (upstreamEvent) {
@@ -156,9 +159,9 @@ pipeline {
               sh "zip -r -qq oai-cn5g-fed.zip .git"
               sh "mkdir -p archives DS-TEST-RESULTS"
               // Prepare the workspace in the remote server 
-              copyTo2ndServer('oai-cn5g-fed.zip', true, ${eNB_Username}, ${params.eNB_IPAddress})
-              myShCmd('git clean -x -d -f > /dev/null 2>&1', true, ${eNB_Username}, ${params.eNB_IPAddress})
-              myShCmd('mkdir -p archives DS-TEST-RESULTS', true, ${eNB_Username}, ${params.eNB_IPAddress})
+              copyTo2ndServer('oai-cn5g-fed.zip', true, ${remote_Username}, ${params.remote_IPAddress})
+              myShCmd('git clean -x -d -f > /dev/null 2>&1', true, ${remote_Username}, ${params.remote_IPAddress})
+              myShCmd('mkdir -p archives DS-TEST-RESULTS', true, ${remote_Username}, ${params.remote_IPAddress})
             }
             if (scmEvent) {
               sh "git clean -x -d -f > /dev/null 2>&1"
@@ -168,23 +171,23 @@ pipeline {
               sh "zip -r -qq oai-cn5g-fed.zip .git"
               sh "mkdir -p archives DS-TEST-RESULTS"
               // Prepare the workspace in remote server
-              copyTo2ndServer('oai-cn5g-fed.zip', true, ${eNB_Username}, ${params.eNB_IPAddress})
-              myShCmd('git clean -x -d -f > /dev/null 2>&1', true, ${eNB_Username}, ${params.eNB_IPAddress})
+              copyTo2ndServer('oai-cn5g-fed.zip', true, ${remote_Username}, ${params.remote_IPAddress})
+              myShCmd('git clean -x -d -f > /dev/null 2>&1', true, ${remote_Username}, ${params.remote_IPAddress})
               if ("MERGE".equals(env.gitlabActionType)) {
                 myShCmd("./ci-scripts/doGitLabMerge.sh --src-branch ${env.gitlabSourceBranch} --src-commit ${env.gitlabMergeRequestLastCommit} --target-branch ${env.gitlabTargetBranch} --target-commit ${GIT_COMMIT}", new_host_flag, new_host_user, new_host)
               }
-              myShCmd('mkdir -p archives DS-TEST-RESULTS', true, ${eNB_Username}, ${params.eNB_IPAddress})
+              myShCmd('mkdir -p archives DS-TEST-RESULTS', true, ${remote_Username}, ${params.remote_IPAddress})
             }
             if ((!upstreamEvent) && (!scmEvent)) {
               sh "git clean -x -d -f > /dev/null 2>&1"
               sh "zip -r -qq oai-cn5g-fed.zip .git"
               sh "mkdir -p archives DS-TEST-RESULTS"
               // Prepare the workspace in the remote server 
-              copyTo2ndServer('oai-cn5g-fed.zip', true, ${eNB_Username}, ${params.eNB_IPAddress})
-              myShCmd('git clean -x -d -f > /dev/null 2>&1', true, ${eNB_Username}, ${params.eNB_IPAddress})
-              myShCmd('mkdir -p archives DS-TEST-RESULTS', true, ${eNB_Username}, ${params.eNB_IPAddress})
+              copyTo2ndServer('oai-cn5g-fed.zip', true, remote_Username, params.remote_IPAddress)
+              myShCmd('git clean -x -d -f > /dev/null 2>&1', true, remote_Username, params.remote_IPAddress)
+              myShCmd('mkdir -p archives DS-TEST-RESULTS', true, remote_Username, params.remote_IPAddress)
             }
-            imageTags = "oai-nrf:${nrfTag},oai-amf:${amfTag},oai-smf:${smfTag},oai-spgwu-tiny:${spgwuTag}"
+            imageTags = "mysql:5.7.30,oai-nrf:${nrfTag},oai-amf:${amfTag},oai-smf:${smfTag},oai-spgwu-tiny:${spgwuTag}"
           }
         }
       }
@@ -194,13 +197,15 @@ pipeline {
         script {
           echo '\u2705 \u001B[32mDeploy CN5G in idle mode\u001B[0m'
           withCredentials([
-            [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.eNB_Credentials}", usernameVariable: 'eNB_Username', passwordVariable: 'eNB_Password'],
+            [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.remote_Credentials}", usernameVariable: 'remote_Username', passwordVariable: 'remote_Password'],
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.OC_Credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
           ]) {
-            try {
-              sh "python3 helmDeploy.py --mode=Deploy --eNBIPAddress=${params.eNB_IPAddress} --eNBUserName=${eNB_Username} --eNBPassword=${eNB_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
-            } catch (Exception e) {
-              currentBuild.result = 'FAILURE'
+            dir('ci-scripts') {
+              try {
+                sh "python3 helmDeploy.py --mode=Deploy --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
+              } catch (Exception e) {
+                currentBuild.result = 'FAILURE'
+              }
             }
           }
         }
@@ -210,13 +215,15 @@ pipeline {
       steps {
         script {
           withCredentials([
-            [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.eNB_Credentials}", usernameVariable: 'eNB_Username', passwordVariable: 'eNB_Password'],
+            [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.remote_Credentials}", usernameVariable: 'remote_Username', passwordVariable: 'remote_Password'],
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.OC_Credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
           ]) {
-            try {
-              sh "python3 helmDeploy.py --mode=UnDeploy --eNBIPAddress=${params.eNB_IPAddress} --eNBUserName=${eNB_Username} --eNBPassword=${eNB_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
-            } catch (Exception e) {
-              currentBuild.result = 'FAILURE'
+            dir('ci-scripts') {
+              try {
+                sh "python3 helmDeploy.py --mode=UnDeploy --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
+              } catch (Exception e) {
+                currentBuild.result = 'FAILURE'
+              }
             }
           }
         }

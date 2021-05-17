@@ -4,12 +4,12 @@
 
 replicaCount: 1
 
-namespace: "oaicicd-tmp"
+namespace: "PROJECT"
 
 image:
   registry: local
-  repository: image-registry.openshift-image-registry.svc:5000/oaicicd-tmp/oai-nrf
-  version: develop
+  repository: image-registry.openshift-image-registry.svc:5000/PROJECT/oai-nrf
+  version: TAG
   # pullPolicy: IfNotPresent or Never or Always
   pullPolicy: Always
 
