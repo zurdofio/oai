@@ -25,8 +25,18 @@
 7.  [Executing gnbsim Scenario](#7-executing-the-gnbsim-scenario)
 8.  [Analysing Scenario Results](#8-analysing-the-scenario-results)
 
+* In this demo the image tags and commits which were used are listed below, follow the [Building images](./BUILD_IMAGES.md) to build images with below tags. 
 
-This tutorial is a extension of previous tutorial. In previous tutorial we have seen the advanced testing tool dsTester, which is useful for validating even more complex scenarios. Moreover, there are various other opensource gnb/ue simulator tools are available for SA5G test. In this tutorial we use opensource simulator tool called gnbsim. With the help of gnbsim tool, we can perform very basic SA5G test by simulating one gnb and one ue. 
+| CNF Name    | Branch Name             | Commit at time of writing                  | Ubuntu 18.04 | RHEL8          |
+| ----------- |:----------------------- | ------------------------------------------ | ------------ | ---------------|
+| AMF         | `develop`               | `82ca64fe8d79dbadbb1a495124ee26352f81bd7a` | X            | Releasing soon |
+| SMF         | `develop`               | `0dba68d6a01e1dad050f47437647f62d40acaec6` | X            | Releasing soon |
+| NRF         | `develop`               | `0e877cb5b80a9c74fa6abca60b95e2d3d22f7a52` | X            | Releasing soon |
+| SPGW-U-TINY | `gtp_extension_header`  | `b628036d2e6060da8ba77c5e4cdde35bf18a62a5` | X            | Releasing soon |
+
+<br/>
+
+This tutorial is a extension of previous tutorial  of [testing with dsTester](./docs/DEPLOY_SA5G_WITH_DS_TESTER.md). In previous tutorial we have seen the advanced testing tool dsTester, which is useful for validating even more complex scenarios. Moreover, there are various other opensource gnb/ue simulator tools are available for SA5G test. In this tutorial we use opensource simulator tool called gnbsim. With the help of gnbsim tool, we can perform very basic SA5G test by simulating one gnb and one ue. 
 
 * Steps 1 to 5 are similar as previous tutorial. Please follow these steps to deploy OAI 5G core network components.
 * We depoloy gnbsim docker service on same host as of core network, so there is no need to create additional route as 
@@ -157,11 +167,10 @@ iperf Done.
 
 | Pcap/log files                                                                             |
 |:------------------------------------------------------------------------------------------ |
-| [5gcn-deployment-gnbsim.pcap](./results/pcap/5gcn-deployment-gnbsim.pcap)                                |
-| [scenario-execution.pcap](./results/pcap/scenario-execution.pcap)                          |
+| [5gcn-deployment-gnbsim.pcap](./results/pcap/5gcn-deployment-gnbsim.pcap)                  |
 | [amf.log](./results/logs/amf.log), [initialmessage.log](./results/logs/initialmessage.log) |
 | [smf.log](./results/logs/smf.log)                                                          |
 | [nrf.log](./results/logs/nrf.log)                                                          |
 | [spgwu.log](./results/logs/spgwu.log)   
 
-* For detailed analysis of messages, please refer previous tutorial.
+* For detailed analysis of messages, please refer previous tutorial of [testing with dsTester](./docs/DEPLOY_SA5G_WITH_DS_TESTER.md).
