@@ -23,11 +23,26 @@
 5.  Deploying OAI 5G Core Network
 6.  [Configuring gnbsim Scenario](#6-configuring-gnbsim-scenario)
 7.  [Executing gnbsim Scenario](#7-executing-the-gnbsim-scenario)
+8.  [Analysing Scenario Results](#8-analysing-the-scenario-results)
 
 
 This tutorial is a extension of previous tutorial. In previous tutorial we have seen the advanced testing tool dsTester, which is useful for validating even more complex scenarios. Moreover, there are various other opensource gnb/ue simulator tools are available for SA5G test. In this tutorial we use opensource simulator tool called gnbsim. With the help of gnbsim tool, we can perform very basic SA5G test by simulating one gnb and one ue. 
 
 * Steps 1 to 5 are similar as previous tutorial. Please follow these steps to deploy OAI 5G core network components.
+* We depoloy gnbsim docker service on same host as of core network, so there is no need to create additional route as 
+we did for dsTest-host.
+* Before we procced further for end to end SA5G test, make sure you have healthy docker services for OAI cn5g -
+```bash
+oai-cn5g-fed/docker-compose$ docker ps -a
+CONTAINER ID   IMAGE                           COMMAND                  CREATED          STATUS                    PORTS                          NAMES
+c25db05aa023   ubuntu:bionic                   "/bin/bash -c ' apt …"   23 seconds ago   Up 22 seconds                                            oai-ext-dn
+31b6391a3a41   oai-amf:develop                 "/bin/bash /openair-…"   23 seconds ago   Up 22 seconds (healthy)   80/tcp, 9090/tcp, 38412/sctp   oai-amf
+753ae61f715f   oai-spgwu-tiny:gtp-ext-header   "/openair-spgwu-tiny…"   23 seconds ago   Up 22 seconds (healthy)   2152/udp, 8805/udp             oai-spgwu
+84c164ab8136   oai-smf:develop                 "/bin/bash /openair-…"   23 seconds ago   Up 22 seconds (healthy)   80/tcp, 9090/tcp, 8805/udp     oai-smf
+6f0ce91e4efb   oai-nrf:develop                 "/bin/bash /openair-…"   24 seconds ago   Up 23 seconds (healthy)   80/tcp, 9090/tcp               oai-nrf
+565617169b42   mysql:5.7                       "docker-entrypoint.s…"   24 seconds ago   Up 23 seconds (healthy)   3306/tcp, 33060/tcp            mysql
+rohan@rohan:~/gitrepo/oai-cn5g-fed/docker-compose$ 
+```
 
 ## 6. Configuring gnbsim Scenario ##
 * Build gnbsim docker image
@@ -38,13 +53,27 @@ $ docker build --tag gnbsim:develop --target gnbsim --file docker/Dockerfile.ubu
 ```
 
 ## 7. Executing the gnbsim Scenario ##
+* The configuration parameters, are preconfigured in [docker-compose.yaml](../docker-compose/docker-compose.yaml) and [docker-compose-gnbsim.yaml](../docker-compose/docker-compose-gnbsim.yaml) and one can modify it for test.
 * Launch gnbsim docker service
 ```bash
 oai-cn5g-fed/docker-compose$ ./core-network.sh start gnbsim
 
 Creating gnbsim ... done
 ```
-* Ping test
+* After launching gnbsim, make sure all services status are healthy -
+```bash
+oai-cn5g-fed/docker-compose$ docker ps -a
+CONTAINER ID   IMAGE                           COMMAND                  CREATED          STATUS                    PORTS                          NAMES
+2ad428f94fb0   gnbsim:develop                  "/gnbsim/bin/entrypo…"   33 seconds ago   Up 32 seconds (healthy)                                  gnbsim
+c25db05aa023   ubuntu:bionic                   "/bin/bash -c ' apt …"   4 minutes ago    Up 4 minutes                                             oai-ext-dn
+31b6391a3a41   oai-amf:develop                 "/bin/bash /openair-…"   4 minutes ago    Up 4 minutes (healthy)    80/tcp, 9090/tcp, 38412/sctp   oai-amf
+753ae61f715f   oai-spgwu-tiny:gtp-ext-header   "/openair-spgwu-tiny…"   4 minutes ago    Up 4 minutes (healthy)    2152/udp, 8805/udp             oai-spgwu
+84c164ab8136   oai-smf:develop                 "/bin/bash /openair-…"   4 minutes ago    Up 4 minutes (healthy)    80/tcp, 9090/tcp, 8805/udp     oai-smf
+6f0ce91e4efb   oai-nrf:develop                 "/bin/bash /openair-…"   4 minutes ago    Up 4 minutes (healthy)    80/tcp, 9090/tcp               oai-nrf
+565617169b42   mysql:5.7                       "docker-entrypoint.s…"   4 minutes ago    Up 4 minutes (healthy)    3306/tcp, 33060/tcp            mysql
+```
+Now we are ready to perform some traffic test.
+* Ping test <br/>
 Here we ping UE from external DN container.
 ```bash
 $ docker exec -it oai-ext-dn ping -c 3 12.1.1.2
@@ -57,9 +86,8 @@ PING 12.1.1.2 (12.1.1.2) 56(84) bytes of data.
 3 packets transmitted, 3 received, 0% packet loss, time 2036ms
 rtt min/avg/max/mdev = 0.145/0.276/0.448/0.127 ms
 rohan@rohan:~/gitrepo/oai-cn5g-fed/docker-compose$ 
-
 ```
-* Iperf test
+* Iperf test <br/>
 Here we do iperf traffic test between gnbsim UE and external DN node. We can make any node as iperf server/client.<br/>
 Running iperf server on external DN container
 ```bash
@@ -112,5 +140,28 @@ Connecting to host 192.168.70.135, port 5201
 
 iperf Done.
 ```
+* Note:- The iperf test is just for illustration purpose and results of the test may vary based on resources available for the docker services
 
+## 8. Analysing the Scenario Results ##
 
+| Container     | Ip-address     |
+| ------------- |:-------------- |
+| mysql         | 192.168.70.131 |
+| oai-amf       | 192.168.70.132 |
+| oai-smf       | 192.168.70.133 |
+| oai-nrf       | 192.168.70.130 |
+| oai-spgwu     | 192.168.70.134 |
+| oai-ext-dn    | 192.168.70.135 |
+| Host Machine  | 192.168.70.129 |
+| gnbsim gNB    | 192.168.70.136 |
+
+| Pcap/log files                                                                             |
+|:------------------------------------------------------------------------------------------ |
+| [5gcn-deployment-gnbsim.pcap](./results/pcap/5gcn-deployment-gnbsim.pcap)                                |
+| [scenario-execution.pcap](./results/pcap/scenario-execution.pcap)                          |
+| [amf.log](./results/logs/amf.log), [initialmessage.log](./results/logs/initialmessage.log) |
+| [smf.log](./results/logs/smf.log)                                                          |
+| [nrf.log](./results/logs/nrf.log)                                                          |
+| [spgwu.log](./results/logs/spgwu.log)   
+
+* For detailed analysis of messages, please refer previous tutorial.
