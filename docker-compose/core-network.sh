@@ -22,7 +22,7 @@ if [[ $1 == 'start' ]]; then
 		docker-compose -f docker-compose.yaml -p 5gcn up -d
 	elif [[ $2 == 'gnbsim' ]]; then
 		echo -e "${BLUE}Starting 5gcn components in the order nrf, mysql, amf, smf, spgwu${NC}..."
-		docker-compose -f docker-compose-gnbsim.yaml -p gnbsim up -d
+		docker-compose -f docker-compose-gnbsim.yaml up -d gnbsim$3
 	else
 		echo -e "${BLUE}Starting 5gcn components in the order mysql, amf, smf, spgwu${NC}..."
 		docker-compose -f docker-compose-no-nrf.yaml -p 5gcn up -d
@@ -90,7 +90,9 @@ elif [[ $1 == 'stop' ]]; then
 	echo -e "${BLUE}Stopping the core network${NC}..."
 	if [[ $2 == 'nrf' ]]; then
 		docker-compose -f docker-compose.yaml -p 5gcn down
-	else
+	elif [[ $2 == 'gnbsim' ]]; then
+		docker-compose -f docker-compose-gnbsim.yaml down
+	else         
 		docker-compose -f docker-compose-no-nrf.yaml -p 5gcn down
 	fi
 	echo -e "${GREEN}Core network stopped${NC}"
