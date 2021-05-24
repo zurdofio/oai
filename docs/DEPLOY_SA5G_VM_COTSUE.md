@@ -21,7 +21,7 @@
 4.  [Building Network Functions](#4-building-network-functions)
 5.  [Configuring Network Functions](#5-configuring-network-functions)
 6.  [Starting Network Functions](#6-starting-network-functions)
-7.  [Analysing Results](#7-analysing-results)
+7.  [Analysing Results](#7-analyzing-the-results)
 8.  [Demo Video](#8-demo-video)
 
 
@@ -103,8 +103,8 @@ The branch commits used at the time of the demo are listed below:
 | NF Name |          Branch Name | Commit                                   |
 | ------- | -------------------: | :--------------------------------------- |
 | AMF     |             bupt_amf | 951db2252b149d78f55aa143a4639d1c25c3dac0 |
-| SMF     |              develop | fcc61f82cc5e0054eeb8c37860cb825e85259036 |
-| SPGW-u  | gtp_extension_header | f13f4a5e2807355d23f136119f85fbf48ed569ea |
+| SMF     |              develop | 2a0dd9c810a322e11ff81b415807fd246e4a9b67 |
+| SPGW-U-TINY  | gtp_extension_header | f13f4a5e2807355d23f136119f85fbf48ed569ea |
 
 ### 4.1 Build AMF
 
@@ -419,8 +419,7 @@ Using wireshark open core.pcap  use the filter `ngap || http || pfcp || gtp`
 7. Allocated UE IP-address can be seen in Packet 1164, 1274, 1359
 
 8. Echo request response between UE and Dn：Packet 2076, 2080
-  
-  ![](./images/virtual-machine/cots-ue/bupt/process.png]
+  ![](./images/virtual-machine/cots-ue/bupt/process.png)
 
 ## 8. Demo Video
 

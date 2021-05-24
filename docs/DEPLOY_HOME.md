@@ -20,3 +20,4 @@
 3.  [Configuring the Containers](./CONFIGURE_CONTAINERS.md)
 4.  [Tutorial: 5G Core Network Deployment and Testing with dsTest](./DEPLOY_SA5G_WITH_DS_TESTER.md)
 5.  [Tutorial: 5G Core Network Deployment using Helm Charts](./DEPLOY_SA5G_HC.md)
+6.  [Tutorial: 5G Core Network Deployment in Virtual Machines and Testing with COTSUE](./DEPLOY_SA5G_VM_COTSUE.md)
