@@ -39,6 +39,10 @@
 
 This tutorial is a extension of previous tutorial  of [testing with dsTester](./docs/DEPLOY_SA5G_WITH_DS_TESTER.md). In previous tutorial we have seen the advanced testing tool dsTester, which is useful for validating even more complex scenarios. Moreover, there are various other opensource gnb/ue simulator tools are available for SA5G test. In this tutorial we use opensource simulator tool called gnbsim. With the help of gnbsim tool, we can perform very basic SA5G test by simulating one gnb and one ue. 
 
+##### About gnbsim -
+[Gnbsim](https://github.com/hhorai/gnbsim) is a 5G SA gNB/UE (Rel. 16) simulator for testing 5G System. It 3rd party opensource tool written in golang and more information can be found [here.](https://github.com/hhorai/gnbsim) Gnbsim simulates NGAP, NAS and GTPU protocols. Current version of gnbsim simulates one gnb and one ue.
+
+Let's begin !!
 * Steps 1 to 5 are similar as previous tutorial. Please follow these steps to deploy OAI 5G core network components.
 * We depoloy gnbsim docker service on same host as of core network, so there is no need to create additional route as 
 we did for dsTest-host.
@@ -263,3 +267,36 @@ PING 12.1.1.5 (12.1.1.5) 56(84) bytes of data.
 2 packets transmitted, 2 received, 0% packet loss, time 1004ms
 rtt min/avg/max/mdev = 0.233/0.261/0.289/0.028 ms
 ```
+
+Last thing is to remove all services - <br/>
+
+* Undeploy the gnbsim
+```bash
+/oai-cn5g-fed/docker-compose$ ./core-network.sh stop gnbsim
+Stopping service gnbsim ...
+Stopping gnbsim ... done
+Removing gnbsim ... done
+Network demo-oai-public-net is external, skipping
+Service gnbsim is  stopped
+```
+
+* Undeploy the core network
+```bash
+/oai-cn5g-fed/docker-compose$ ./core-network.sh stop nrf
+Stopping service nrf ...
+Stopping oai-amf    ... done
+Stopping oai-ext-dn ... done
+Stopping oai-smf    ... done
+Stopping oai-spgwu  ... done
+Stopping oai-nrf    ... done
+Stopping mysql      ... done
+Removing oai-amf    ... done
+Removing oai-ext-dn ... done
+Removing oai-smf    ... done
+Removing oai-spgwu  ... done
+Removing oai-nrf    ... done
+Removing mysql      ... done
+Network demo-oai-public-net is external, skipping
+Service nrf is  stopped
+```
+
