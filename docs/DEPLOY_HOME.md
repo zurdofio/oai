@@ -19,3 +19,4 @@
 2.  [Building the Docker Images](./BUILD_IMAGES.md)
 3.  [Configuring the Containers](./CONFIGURE_CONTAINERS.md)
 4.  [Tutorial: 5G Core Network Deployment and Testing with dsTest](./DEPLOY_SA5G_WITH_DS_TESTER.md)
+5.  [Tutorial: 5G Core Network Deployment and Testing with gnbsim](./DEPLOY_SA5G_WITH_GNBSIM.md)
