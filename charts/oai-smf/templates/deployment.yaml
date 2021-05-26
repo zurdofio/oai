@@ -156,3 +156,4 @@ spec:
       schedulerName: default-scheduler
       serviceAccountName: {{ .Values.serviceAccount.name }}
       terminationGracePeriodSeconds: 15
+      nodeName: perse.5glab.nsa.eurecom.fr
