@@ -257,6 +257,34 @@ class ClusterDeploy:
 		mySSH.close()
 		self.AnalyzeLogFile_5gcn()
 
+	def GetLogsConfigs(self):
+		lIpAddr = self.remoteIPAdd
+		lUserName = self.remoteUserName
+		lPassWord = self.remotePassword
+		lSourcePath = self.sourceCodePath
+		mySSH = SSH.SSHConnection()
+		mySSH.open(lIpAddr, lUserName, lPassWord)
+		images = self.imageTags.split(',')
+		for image in images:
+			eachImage = image.split(':')
+			imageName = eachImage[0]
+			imageTag = eachImage[1]
+			if imageName == 'mysql':
+				continue
+			if imageName == 'oai-nrf':
+				nameSufix = 'nrf'
+			elif imageName == 'oai-amf':
+				nameSufix = 'amf'
+			elif imageName == 'oai-smf':
+				nameSufix = 'smf'
+			elif imageName == 'oai-spgwu-tiny':
+				nameSufix = 'spgwu'
+			mySSH.command2(f'oc get pods -o wide -l app.kubernetes.io/instance={imageName}', 6, silent=True)
+			result = re.search(f'{imageName}[\S\d\w]+', mySSH.cmd2Results)
+			podName = result.group(0)
+			mySSH.command2(f'oc logs {podName} {nameSufix} > {lSourcePath}/archives/{imageName}_pod.log', 10, silent=True)
+		mySSH.command('oc logout', '\$', 6)
+		mySSH.close()
 
 	def AnalyzeLogFile_5gcn(self):
 		lIpAddr = self.remoteIPAdd
@@ -339,3 +367,5 @@ if CN.mode == 'Deploy':
 	CN.Deploy_5gcn()
 elif CN.mode == 'UnDeploy':
 	CN.UnDeploy_5gcn()
+elif CN.mode == 'GetLogs':
+	CN.GetLogsConfigs()

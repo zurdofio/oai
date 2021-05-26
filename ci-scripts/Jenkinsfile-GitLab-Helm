@@ -204,11 +204,7 @@ pipeline {
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.OC_Credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
           ]) {
             dir('ci-scripts') {
-              try {
-                sh "python3 helmDeploy.py --mode=Deploy --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
-              } catch (Exception e) {
-                currentBuild.result = 'FAILURE'
-              }
+              sh "python3 helmDeploy.py --mode=Deploy --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
             }
           }
         }
@@ -234,6 +230,13 @@ pipeline {
                 } catch (Exception e) {
                   currentBuild.result = 'FAILURE'
                 } 
+              }
+            }
+            dir('ci-scripts') {
+              try {
+                sh "python3 helmDeploy.py --mode=GetLogs --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
+              } catch (Exception e) {
+                echo "Unable to get the 5gcn components pod logs"
               }
             }
           }

@@ -9,7 +9,7 @@ namespace: "PROJECT"
 image:
   registry: local
   repository: image-registry.openshift-image-registry.svc:5000/PROJECT/oai-nrf
-  version: TAG
+  version: "TAG"
   # pullPolicy: IfNotPresent or Never or Always
   pullPolicy: Always
 
