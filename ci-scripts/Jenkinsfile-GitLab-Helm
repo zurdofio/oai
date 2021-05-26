@@ -119,6 +119,9 @@ pipeline {
               } else {
                 dsT_host_ip_addr = params.DS_Tester_Server_IP_Addr
               }
+              if (params.dsTesterGitLabRepository_Credentials == null) {
+                allParametersPresent = false
+              }
               if (allParametersPresent) {
                 echo "DS Tester  is on ${dsT_host}"
               } else {
@@ -205,6 +208,32 @@ pipeline {
                 sh "python3 helmDeploy.py --mode=Deploy --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
               } catch (Exception e) {
                 currentBuild.result = 'FAILURE'
+              }
+            }
+          }
+        }
+      }
+    }
+    stage ('Check with DS Tester') {
+      when { expression {dsT_host_flag} }
+      steps {
+        lock (ds_tester_ci_resource) {
+          script {
+            if (fileExists("dstester")) {
+              sh "rm -Rf dstester > /dev/null 2>&1"
+            }
+            sh "mkdir -p dstester"
+            dir ('dstester') {
+              withCredentials([
+                [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.dsTesterGitLabRepository_Credentials}", usernameVariable: 'git_username', passwordVariable: 'git_token']
+              ]) {
+                sh "git clone https://${git_username}:${git_token}@github.com/OPENAIRINTERFACE/chasseur.git . > ../git_clone.log 2>&1"
+                sh "git checkout develop >> ../git_clone.log 2>&1"
+                try {
+                  sh "python3 jenkins/dogmatix-agent.py -f jenkins/suit.yaml"
+                } catch (Exception e) {
+                  currentBuild.result = 'FAILURE'
+                } 
               }
             }
           }

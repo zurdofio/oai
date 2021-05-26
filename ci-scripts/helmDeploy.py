@@ -279,7 +279,7 @@ def Usage():
 	print('Usage: python3 helmDeploy.py [options]')
 	print('  --help  Show this help.')
 	print('---------------------------------------------------------------------------------------------- Mandatory Options -----')
-	print('  --mode=[Deploy/Deploy]')
+	print('  --mode=[Deploy/UnDeploy]')
 	print('  --remoteIPAdd=[IP Address of remote Server]')
 	print('  --remoteUserName=[UserName of remote Server]')
 	print('  --remotePassword=[Password of remote Server]')
