@@ -28,8 +28,12 @@ spec:
       - name: tcpdump
         image: image-registry.openshift-image-registry.svc:5000/oai/tcpdump-internal:latest
         command:
-          - /bin/sleep
-          - infinity
+          - /bin/sh
+          - -c
+          - /usr/sbin/tcpdump -i net1 -w /pcap/oai-nrf_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+        volumeMounts:
+        - mountPath: "/pcap"
+          name: cn5g-pv
       - name: nrf
         image: "{{ .Values.image.repository }}:{{ .Values.image.version }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -73,6 +77,10 @@ spec:
               configMapKeyRef:
                 name: {{ .Chart.Name }}-configmap
                 key: nrfApiVersion
+      volumes:
+      - name: cn5g-pv
+        persistentVolumeClaim:
+          claimName: cn5g-pvc
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler

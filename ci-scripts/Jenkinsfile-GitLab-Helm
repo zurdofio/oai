@@ -232,13 +232,11 @@ pipeline {
                 } 
               }
             }
-            dir('ci-scripts') {
-              try {
-                sh "python3 helmDeploy.py --mode=GetLogs --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
-              } catch (Exception e) {
-                echo "Unable to get the 5gcn components pod logs"
-              }
-            }
+            try {
+              sh "python3 ci-scripts/helmDeploy.py --mode=GetLogs --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
+            } catch (Exception e) {
+              echo "Unable to get the 5gcn components pod logs"
+            }    
           }
         }
       }
