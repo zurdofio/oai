@@ -198,7 +198,7 @@ pipeline {
     stage ('Deploy Whole 5G Core Network') {
       steps {
         script {
-          echo '\u2705 \u001B[32mDeploy CN5G in idle mode\u001B[0m'
+          echo '\u2705 \u001B[32mDeploy CN5G on Cluster\u001B[0m'
           withCredentials([
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.remote_Credentials}", usernameVariable: 'remote_Username', passwordVariable: 'remote_Password'],
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.OC_Credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
@@ -215,6 +215,7 @@ pipeline {
       steps {
         lock (ds_tester_ci_resource) {
           script {
+            echo '\u2705 \u001B[32mTesting with DS Tester\u001B[0m'
             if (fileExists("dstester")) {
               sh "rm -Rf dstester > /dev/null 2>&1"
             }
@@ -226,17 +227,14 @@ pipeline {
                 sh "git clone https://${git_username}:${git_token}@github.com/OPENAIRINTERFACE/chasseur.git . > ../git_clone.log 2>&1"
                 sh "git checkout develop >> ../git_clone.log 2>&1"
                 try {
-                  sh "python3 jenkins/dogmatix-agent.py -f jenkins/suit.yaml"
+                  sh "python3 jenkins/dogmatix-agent.py -f jenkins/suit.yaml | tee ../DS-TEST-RESULTS/dsTester_Summary.txt"
                 } catch (Exception e) {
                   currentBuild.result = 'FAILURE'
+                  echo "dsTester FAILED"
                 } 
               }
             }
-            try {
-              sh "python3 ci-scripts/helmDeploy.py --mode=GetLogs --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
-            } catch (Exception e) {
-              echo "Unable to get the 5gcn components pod logs"
-            }    
+            sh "python3 ./ci-scripts/toCheckDSTesterResult1.py"
           }
         }
       }
@@ -244,18 +242,32 @@ pipeline {
     stage ('Undeploy 5G-CN') {
       steps {
         script {
+          echo '\u2705 \u001B[32mUnDeploy CN5G on Cluster\u001B[0m'
           withCredentials([
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.remote_Credentials}", usernameVariable: 'remote_Username', passwordVariable: 'remote_Password'],
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.OC_Credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
           ]) {
+            try {
+              sh "python3 ci-scripts/helmDeploy.py --mode=GetLogs --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
+            } catch (Exception e) {
+              echo "Unable to collect the logs, configs, pcaps"
+            }
             dir('ci-scripts') {
-              try {
-                sh "python3 helmDeploy.py --mode=UnDeploy --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
-              } catch (Exception e) {
-                currentBuild.result = 'FAILURE'
-              }
+              sh "python3 helmDeploy.py --mode=UnDeploy --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
             }
           }
+        }
+      }
+    }
+  }
+  post {
+    always {
+      script { 
+        // Zipping all archived log files
+        sh "zip -r -qq cn5g_fed_cluster_logs.zip archives DS-TEST-RESULTS"
+        sh "rm -rf archives DS-TEST-RESULTS"
+        if (fileExists('cn5g_fed_cluster_logs.zip')) {
+          archiveArtifacts artifacts: 'cn5g_fed_cluster_logs.zip'
         }
       }
     }

@@ -265,8 +265,8 @@ class ClusterDeploy:
 		# copying the pcaps
 		lssh = subprocess.Popen(f'ls /nfs/prov-vols | grep {self.OCProjectName}-cn5g-pvc',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE, encoding='utf-8').stdout.readlines()
 		pStorage = str(lssh[0]).strip()
-		lssh = subprocess.Popen(f'mkdir -p archives/pcap',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-		lssh = subprocess.Popen(f'cp /nfs/prov-vols/{pStorage}/* archives/pcap/',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		subprocess.Popen(f'mkdir -p archives/pcap',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		subprocess.Popen(f'cp /nfs/prov-vols/{pStorage}/* archives/pcap/',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		# copy the pods logs
 		mySSH = SSH.SSHConnection()
 		mySSH.open(lIpAddr, lUserName, lPassWord)
