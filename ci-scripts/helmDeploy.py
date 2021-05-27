@@ -210,7 +210,6 @@ class ClusterDeploy:
 			self.UnDeploy_5gcn()
 			self.AnalyzeLogFile_5gcn()
 			sys.exit(-1)
-		self.AnalyzeLogFile_5gcn()
 		
 	def UnDeploy_5gcn(self):
 		mySSH = SSH.SSHConnection()
@@ -262,8 +261,29 @@ class ClusterDeploy:
 		lUserName = self.remoteUserName
 		lPassWord = self.remotePassword
 		lSourcePath = self.sourceCodePath
+		# copying the pcaps
+		lssh = subprocess.Popen(f'ls /nfs/prov-vols | grep {self.OCProjectName}-cn5g-pvc',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE, encoding='utf-8').stdout.readlines()
+		pStorage = str(lssh[0]).strip()
+		lssh = subprocess.Popen(f'mkdir -p ../archives/pcap',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		lssh = subprocess.Popen(f'cp /nfs/prov-vols/{pStorage}/* ../archives/pcap/',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		# copy the pods logs
 		mySSH = SSH.SSHConnection()
 		mySSH.open(lIpAddr, lUserName, lPassWord)
+		mySSH.command2(f'oc login -u {self.OCUserName} -p {self.OCPassword}', 6, silent=True)
+		if mySSH.cmd2Results.count('Login successful.') == 0:
+			logging.error('\u001B[1m OC Cluster Login Failed\u001B[0m')
+			mySSH.close()
+			sys.exit(-1)
+		else:
+			logging.debug('\u001B[1m   Login to OC Cluster Successfully\u001B[0m')
+		mySSH.command2(f'oc project {self.OCProjectName}', 6, silent=True)
+		if mySSH.cmd2Results.count(f'Already on project "{self.OCProjectName}"') == 0 and mySSH.cmd2Results.count(f'Now using project "{self.OCProjectName}"') == 0:
+			logging.error(f'\u001B[1m Unable to access OC project {self.OCProjectName}\u001B[0m')
+			mySSH.close()
+			sys.exit(-1)
+		else:
+			logging.debug(f'\u001B[1m   Now using project {self.OCProjectName}\u001B[0m')
+		mySSH.command2(f'mkdir -p {lSourcePath}/archives/logs', 6, silent=True)
 		images = self.imageTags.split(',')
 		for image in images:
 			eachImage = image.split(':')
@@ -279,10 +299,16 @@ class ClusterDeploy:
 				nameSufix = 'smf'
 			elif imageName == 'oai-spgwu-tiny':
 				nameSufix = 'spgwu'
+				nameSufix1 = 'spgwu-tiny'
 			mySSH.command2(f'oc get pods -o wide -l app.kubernetes.io/instance={imageName}', 6, silent=True)
 			result = re.search(f'{imageName}[\S\d\w]+', mySSH.cmd2Results)
 			podName = result.group(0)
-			mySSH.command2(f'oc logs {podName} {nameSufix} > {lSourcePath}/archives/{imageName}_pod.log', 10, silent=True)
+			mySSH.command2(f'oc logs {podName} {nameSufix} > {lSourcePath}/archives/logs/{imageName}_pod.log', 10, silent=True)
+			time.sleep(1)
+			if imageName == 'oai-spgwu-tiny':
+				mySSH.command2(f'oc cp {podName}:/openair-{nameSufix1}/etc/ {lSourcePath}/archives/config/ -c {nameSufix}', 6, silent=True)
+			else:
+				mySSH.command2(f'oc cp {podName}:/openair-{nameSufix}/etc/ {lSourcePath}/archives/config/ -c {nameSufix}', 6, silent=True)
 		mySSH.command('oc logout', '\$', 6)
 		mySSH.close()
 
