@@ -20,6 +20,9 @@ if [[ $1 == 'start' ]]; then
 	if [[ $2 == 'nrf' ]]; then
 		echo -e "${BLUE}Starting 5gcn components in the order nrf, mysql, amf, smf, spgwu${NC}..."
 		docker-compose -f docker-compose.yaml -p 5gcn up -d
+	elif [[ $2 == 'gnbsim' ]]; then
+		echo -e "${BLUE}Starting gnbsim ${NC}..."
+		docker-compose -f docker-compose-gnbsim.yaml up -d gnbsim$3
 	else
 		echo -e "${BLUE}Starting 5gcn components in the order mysql, amf, smf, spgwu${NC}..."
 		docker-compose -f docker-compose-no-nrf.yaml -p 5gcn up -d
@@ -29,20 +32,29 @@ if [[ $1 == 'start' ]]; then
 		mysql_health=$(docker inspect --format='{{json .State.Health.Status}}' mysql)
 		if [[ $2 == 'nrf' ]]; then
 			nrf_health=$(docker inspect --format='{{json .State.Health.Status}}' oai-nrf)
+                elif [[ $2 == 'gnbsim' ]]; then
+                        gnbsim_health=$(docker inspect --format='{{json .State.Health.Status}}' gnbsim)
 		fi
 		amf_health=$(docker inspect --format='{{json .State.Health.Status}}' oai-amf)
 		smf_health=$(docker inspect --format='{{json .State.Health.Status}}' oai-smf)
 		spgwu_health=$(docker inspect --format='{{json .State.Health.Status}}' oai-spgwu)
-		if [[ ${mysql_health} == '"healthy"' && ${amf_health} == '"healthy"' && ${smf_health} == '"healthy"' && ${spgwu_health} == '"healthy"' && $2 != 'nrf' ]]; then
+		if [[ ${mysql_health} == '"healthy"' && ${amf_health} == '"healthy"' && ${smf_health} == '"healthy"' && ${spgwu_health} == '"healthy"' && $2 != 'nrf' && $2 != 'gnbsim'	]]; then
 			echo -e "\n${GREEN}All components are healthy${NC}..."
 			STATUS=0
 			break
+                elif [[ $2 == 'gnbsim' ]]; then
+                        echo -ne "gnbsim : $gnbsim_health\033[0K\r"
+			if  [[ ${gnbsim_health} == '"healthy"' ]]; then
+                             STATUS=0
+			     break
+		        fi     
+                        sleep 2
 		elif [[ ${mysql_health} == '"healthy"' && ${amf_health} == '"healthy"' && ${smf_health} == '"healthy"' && ${spgwu_health} == '"healthy"' && ${nrf_health} == '"healthy"' && $2 == 'nrf' ]]; then
 			echo -e "\n${GREEN}All components are healthy${NC}..."
 			STATUS=0
 			break
 		elif [[ $2 != 'nrf' ]]; then
-                        echo -ne "mysql : $mysql_health, oai-amf : $amf_health, oai-smf : $smf_health, oai-spgwu : $spgwu_health\033[0K\r"
+                        echo -ne "here mysql : $mysql_health, oai-amf : $amf_health, oai-smf : $smf_health, oai-spgwu : $spgwu_health\033[0K\r"
 			STATUS=1
 			sleep 2
 		else
@@ -63,6 +75,8 @@ if [[ $1 == 'start' ]]; then
 		else
 			echo -e "${GREEN}SMF and UPF are registered to NRF${NC}..."
 		fi
+	elif  [[ $2 == 'gnbsim' && $STATUS == 0 ]]; then
+		echo -e "${GREEN}#### gnbsim is healthy - gnb & ue is conncted to core network now !! #####${NC}"
 	else
 		echo -e "${BLUE}Checking if SMF is able to connect with UPF${NC}"
 		upf_logs=$(docker logs oai-spgwu | grep  'Received SX HEARTBEAT RESPONSE')
@@ -84,13 +98,15 @@ if [[ $1 == 'start' ]]; then
 	fi
 
 elif [[ $1 == 'stop' ]]; then
-	echo -e "${BLUE}Stopping the core network${NC}..."
+	echo -e "${RED}Stopping service $2 ${NC}..."
 	if [[ $2 == 'nrf' ]]; then
 		docker-compose -f docker-compose.yaml -p 5gcn down
-	else
+	elif [[ $2 == 'gnbsim' ]]; then
+		docker-compose -f docker-compose-gnbsim.yaml down
+	else         
 		docker-compose -f docker-compose-no-nrf.yaml -p 5gcn down
 	fi
-	echo -e "${GREEN}Core network stopped${NC}"
+	echo -e "${GREEN}Service $2 is  stopped${NC}"
 else
 	echo -e "Only use the following options\n\n${RED}start${NC}: start the 5gCN\n${RED}stop${NC}: stops the 5gCN\n${RED}nrf${NC}: nrf should be used\n${RED}no-nrf${NC}: nrf should not be used\nExample: ./core-network.sh start nrf"
 fi
