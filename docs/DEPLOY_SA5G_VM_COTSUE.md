@@ -27,12 +27,13 @@
 
 ## 1. Description
 
-This tutorial shows how to use OAI 5g Core network in standalone deployment with commercial gNB and COTS UE. The tutorial and testbed was made by [Opensource5g group](http://www.opensource5g.org) located in BUPT, Beijing.
+This tutorial shows how to use OAI 5g Core network in standalone deployment with commercial gNB and COTS UE. The tutorial and testbed was made by [OpenXG group](http://www.opensource5g.org) located in BUPT, Beijing.
 
 - The core network is deployed in two Virtual Machines
 - The commercial gNB used for this tutorial is Amarisoft
 - The COTS UE used for this tutorial is Xiaomi K30i
 - [Openair-spgwu-tiny](https://github.com/OPENAIRINTERFACE/openair-spgwu-tiny/tree/gtp_extension_header) is choosen as the UPF for this tutorial
+- Subscriber database is running as a process inside 5G CCP-VM
 
 ## 2. Pre-requisites
 
@@ -102,14 +103,16 @@ The branch commits used at the time of the demo are listed below:
 
 | NF Name |          Branch Name | Commit                                   |
 | ------- | -------------------: | :--------------------------------------- |
-| AMF     |             bupt_amf | 951db2252b149d78f55aa143a4639d1c25c3dac0 |
+| AMF     |             develop | aca0000239dda24fb115c54677060f3da8ca6e54 |
 | SMF     |              develop | 2a0dd9c810a322e11ff81b415807fd246e4a9b67 |
 | SPGW-U-TINY  | gtp_extension_header | f13f4a5e2807355d23f136119f85fbf48ed569ea |
+
 
 ### 4.1 Build AMF
 
 - Login to 5G-CCP VM and open the terminal to fetch, build and install the AMF. 
 - The build can be made in two modes Debug and Release. Debug mode will provide more logs for debuging but may effect the performance. 
+- To read more about amf build [checkout](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-amf/-/wikis/home) 
 
 ``` bash=
 ~$ git clone -b bupt_amf https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-amf.git
@@ -123,6 +126,7 @@ The branch commits used at the time of the demo are listed below:
 
 - Remain logged in to the same virtual machine to compile and install SMF
 - The build can be made in two modes Debug and Release. Debug mode will provide more logs for debuging but may effect the performance.
+- To read more about smf build [checkout](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-smf/-/wikis/home) 
 
 ``` bash=
 ~$ git clone -b develop https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-smf.git
@@ -161,6 +165,10 @@ The branch commits used at the time of the demo are listed below:
 
 ### 5.1 AMF Configuration
 
+- Install and configure MYSQL database in the 5G-CCP Virtual Machine with the [database file](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-amf/-/blob/bupt_amf/etc/openxg.sql) 
+
+- Configuration file used in setup can be find in the below link, it might differ with the one which is present in the current **develop branch**. For this case refer to the further points to understand the exact configuration changes which are important.  
+
 | File Name |                 Repository |                                                     Location |
 | --------- | -------------------------: | -----------------------------------------------------------: |
 | amf.conf  | (Gitlab) cn5g/oai-cn5g-amf | [etc/successful.conf/amf.conf](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-amf/-/blob/bupt_amf/etc/successful.conf/amf.conf) |
@@ -176,7 +184,34 @@ SD  = "none" #S-NSSAI parameter slice, composition of service type and slice com
 ```
 
 - Network interface configuration for AMF based on the interfaces configured for 5G-CCP virtual machine
-  ![amf_interface](./images/virtual-machine/cots-ue/bupt/amf_interface.png)
+
+```
+  INTERFACES:
+  {
+    # AMF binded interface for N1/N2 interface (NGAP) 
+    NGAP_AMF: 
+    {
+      INTERFACE_NAME = "ens9";  # YOUR NETWORK CONFIG HERE
+      IPV4_ADDRESS   = "read";
+      PORT           = 38412;                            # YOUR NETWORK CONFIG HERE
+      PPID           = 60;                               # YOUR NETWORK CONFIG HERE
+    };
+    
+    # AMF binded interface for SBI (N11 (SMF)/N12 (AUSF), etc.)
+    N11:
+    {
+      INTERFACE_NAME = "ens3";                           # YOUR NETWORK CONFIG HERE
+      IPV4_ADDRESS   = "read"; 
+      PORT           = 8282;                             # YOUR NETWORK CONFIG HERE
+      API_VERSION    = "v1"; 
+      
+      SMF_INSTANCES_POOL = (
+        {SMF_INSTANCE_ID = 1; IPV4_ADDRESS = "192.168.122.197"; PORT = "8889"; VERSION = "v2"; SELECTED = "true"},   # YOUR SMF CONFIG HERE
+        {SMF_INSTANCE_ID = 2; IPV4_ADDRESS = "192.168.122.2"; PORT = "80"; VERSION = "v1"; SELECTED = "false"} # YOUR SMF CONFIG HERE
+      );
+    };
+  };
+```
 
 - NGAP_AMF interface configuration
 
@@ -195,19 +230,67 @@ SELECTED: true/false indicate whether SMF is selected or not
 ```
 
 - AMF DATABASE configuration
-  ![mysql_amf](./images/virtual-machine/cots-ue/bupt/MYSQL.png)
+
+```
+  AUTHENTICATION:
+  {
+    ## MySQL mandatory options
+    MYSQL_server = "127.0.0.1"; # MySQL Server address
+    MYSQL_user   = "root";   # Database server login
+    MYSQL_pass   = "linux";   # Database server password
+    MYSQL_db     = "OPENXG_DB";     # Your database name
+    
+    ## OP
+    OPERATOR_key = "63bfa50ee6523365ff14c1f45f88737d"; # OP key matching your database
+    RANDOM = "true";
+  };
+```
 
 ### 5.2 SMF Configuration
+
+- Configuration file used in setup can be find in the below link, it might differ with the one which is present in the current **develop branch**. For this case refer to the further points to understand the exact configuration changes which are important.  
 
 | File Name |                 Repository |                                                     Location |
 | --------- | -------------------------: | -----------------------------------------------------------: |
 | smf.conf  | (Gitlab) cn5g/oai-cn5g-amf | [etc/successful.conf/smf.conf](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-amf/-/blob/bupt_amf/etc/successful.conf/smf.conf) |
 
 - Network interface configuration for SMF based on the interfaces configured for 5G-CCP virtual machine
-  ![smf_interface](./images/virtual-machine/cots-ue/bupt/smf_inteface.png)
+
+```
+    INTERFACES :
+    {
+        N4 :
+        {
+            # SMF binded interface for N4 communication (UPF)
+            INTERFACE_NAME = "ens3"; # YOUR NETWORK CONFIG HERE
+            IPV4_ADDRESS   = "read";                        
+         };
+
+        SBI :
+        {
+            # SMF binded interface for SBI interface (e.g., communication with AMF, UDM)
+            INTERFACE_NAME = "ens3";     # YOUR NETWORK CONFIG HERE
+            IPV4_ADDRESS   = "read";
+            PORT           = 8889;       # YOUR NETWORK CONFIG HERE (default: 80)
+            HTTP2_PORT     = 8890; # YOUR NETWORK CONFIG HERE
+            API_VERSION    = "v2";                # YOUR SMF API VERSION CONFIG HERE
+         };                 
+
+    };
+```
 
 - The DNN configuration is based on the UE configuration these values should match with the UE
-  ![dnn_list](./images/virtual-machine/cots-ue/bupt/smf_dnn_list.png)
+
+```
+    DNN_LIST = (
+       # IPV4_POOL, IPV6_POOL are index in IPV4_LIST, IPV6_LIST, PDU_SESSION_TYPE choice in {IPv4, IPv6, IPv4v6}
+      {DNN_NI = "IMS"; PDU_SESSION_TYPE = "IPv4v6"; IPV4_POOL  = 0; IPV6_POOL = 0},
+      {DNN_NI = "ctnet"; PDU_SESSION_TYPE = "IPv4v6"; IPV4_POOL = 2; IPV6_POOL = 1},
+      {DNN_NI = "apn2"; PDU_SESSION_TYPE = "IPv4"; IPV4_POOL = 1; IPV6_POOL = -1},
+      {DNN_NI = "apn3"; PDU_SESSION_TYPE = "IPv4"; IPV4_POOL = 3; IPV6_POOL = -1},
+      {DNN_NI = "apn4"; PDU_SESSION_TYPE = "IPv4"; IPV4_POOL = 4; IPV6_POOL = -1}
+    );
+```
 
 - Field explanation.
 
@@ -218,10 +301,52 @@ IPV4_POOL/IPV6_POOL : Above this location in the configuration file, select the 
 ```
 
 - AMF,UPF information, UDM and NRF were not used for this demo
-  ![network_ip_address](./images/virtual-machine/cots-ue/bupt/network_Ip_Address.png)
+
+```
+    AMF :
+    {
+      IPV4_ADDRESS = "192.168.122.197";  # YOUR AMF CONFIG HERE
+      PORT         = 8282;            # YOUR AMF CONFIG HERE (default: 80)
+      API_VERSION  = "v2";   # YOUR AMF API VERSION FOR SBI CONFIG HERE
+    };
+    
+    UDM :
+    {
+      IPV4_ADDRESS = "192.168.122.197";  # YOUR UDM CONFIG HERE
+      PORT         = 8181;            # YOUR UDM CONFIG HERE (default: 80)
+      API_VERSION  = "v2";   # YOUR UDM API VERSION FOR SBI CONFIG HERE
+    };    
+
+    NRF :
+    {
+      IPV4_ADDRESS = "192.168.12.100";  # YOUR NRF CONFIG HERE
+      PORT         = 80;            # YOUR NRF CONFIG HERE (default: 80)
+      API_VERSION  = "v1";   # YOUR NRF API VERSION FOR SBI CONFIG HERE
+    };
+        
+    UPF_LIST = (
+         {IPV4_ADDRESS = "192.168.199.126" ;}  # YOUR UPF CONFIG HERE
+    ); 
+
+```
 
 - Configure some PDU session information and Qos parameter 
-  ![pdu_session](./images/virtual-machine/cots-ue/bupt/session_management_list.png)
+
+```
+    LOCAL_CONFIGURATION :
+    {
+      USE_LOCAL_CONFIGURATION = "yes";
+      SESSION_MANAGEMENT_SUBSCRIPTION_LIST = (
+         { NSSAI_SST = 1, NSSAI_SD = "0", DNN = "IMS", DEFAULT_SESSION_TYPE = "IPV4V6", DEFAULT_SSC_MODE = 1, 
+           QOS_PROFILE_5QI = 5, QOS_PROFILE_PRIORITY_LEVEL = 1, QOS_PROFILE_ARP_PRIORITY_LEVEL = 1, QOS_PROFILE_ARP_PREEMPTCAP = "NOT_PREEMPT", 
+           QOS_PROFILE_ARP_PREEMPTVULN = "NOT_PREEMPTABLE", SESSION_AMBR_UL = "20Mbps", SESSION_AMBR_DL = "22Mbps"},
+         { NSSAI_SST = 1; NSSAI_SD = "0", DNN = "ctnet", DEFAULT_SESSION_TYPE = "IPV4v6", DEFAULT_SSC_MODE = 1, 
+           QOS_PROFILE_5QI = 9, QOS_PROFILE_PRIORITY_LEVEL = 1, QOS_PROFILE_ARP_PRIORITY_LEVEL = 1, QOS_PROFILE_ARP_PREEMPTCAP = "NOT_PREEMPT", 
+           QOS_PROFILE_ARP_PREEMPTVULN = "NOT_PREEMPTABLE", SESSION_AMBR_UL = "1000Mbps", SESSION_AMBR_DL = "1100Mbps"}
+        );                 
+    }; 
+
+```
 
 ### 5.3 SPGWU Configuration
 
@@ -230,18 +355,73 @@ IPV4_POOL/IPV6_POOL : Above this location in the configuration file, select the 
 | spgw_u.conf | (Gitlab) cn5g/oai-cn5g-amf | [etc/successful.conf/spgw_u.conf](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-amf/-/blob/bupt_amf/etc/successful.conf/spgw_u.conf) |
 
 - S4, SX and SGI Network interface configuration
-  ![](./images/virtual-machine/cots-ue/bupt/spgwu_s4.png)
-  ![](./images/virtual-machine/cots-ue/bupt/spgwu_sx.png)
-  ![](./images/virtual-machine/cots-ue/bupt/spgwu_sgi.png)
+```
+    INTERFACES :
+    {
+        S1U_S12_S4_UP :
+        {
+            # S-GW binded interface for S1-U communication (GTPV1-U) can be ethernet interface, virtual ethernet interface, we don't advise wireless interfaces
+            INTERFACE_NAME         = "ens12";  # STRING, interface name, YOUR NETWORK CONFIG HERE
+            IPV4_ADDRESS           = "read";                                    # STRING, CIDR or "read to let app read interface configured IP address
+            #PORT                   = 2152;                                     # Default is 2152
+            #SCHED_PARAMS :
+            #{
+                #CPU_ID       = 2;
+                #SCHED_POLICY = "SCHED_FIFO"; # Values in { SCHED_OTHER, SCHED_IDLE, SCHED_BATCH, SCHED_FIFO, SCHED_RR }
+                #SCHED_PRIORITY = 98;
+            #};
+        };
+        SX :
+        {
+            # S/P-GW binded interface for SX communication
+            INTERFACE_NAME         = "ens9"; # STRING, interface name
+            IPV4_ADDRESS           = "read";                        # STRING, CIDR or "read" to let app read interface configured IP address
+            #PORT                   = 8805;                         # Default is 8805
+            #SCHED_PARAMS :
+            #{
+                #CPU_ID       = 1;
+                #SCHED_POLICY = "SCHED_FIFO"; # Values in { SCHED_OTHER, SCHED_IDLE, SCHED_BATCH, SCHED_FIFO, SCHED_RR }
+                #SCHED_PRIORITY = 95;
+            #};
+        };
+        SGI :
+        {
+           # No config to set, the software will set the SGi interface to the interface used for the default route.
+            INTERFACE_NAME         = "ens10"; # STRING, interface name or "default_gateway"
+            IPV4_ADDRESS           = "read";                         # STRING, CIDR or "read" to let app read interface configured IP address
+            #SCHED_PARAMS :
+            #{
+                #CPU_ID       = 3;
+                #SCHED_POLICY = "SCHED_FIFO"; # Values in { SCHED_OTHER, SCHED_IDLE, SCHED_BATCH, SCHED_FIFO, SCHED_RR }
+                #SCHED_PRIORITY = 98;
+            #};
+        };
+    };
+
+```
 
 - SMF network information
-  ![](./images/virtual-machine/cots-ue/bupt/spgwu_Ip_list.png)
 
-- Slice configuration (NSSAI_SST,NSSAI_SD,DNN) 
-  ![](./images/virtual-machine/cots-ue/bupt/spgwu_slice.png)
+```
+    SPGW-C_LIST = (
+         {IPV4_ADDRESS="192.168.122.197" ;}
+    );
 
+```
 
-### 5.4 Configure SIM card and database
+- Slice configuration (NSSAI_SST,NSSAI_SD,DNN)
+
+```
+    UPF_INFO = (
+         { NSSAI_SST = 1, NSSAI_SD = "0", DNN = "ims"},
+         ##{ NSSAI_SST = 222; NSSAI_SD = "123", DNN = "ctnet"}
+         { NSSAI_SST = 1; NSSAI_SD = "0", DNN = "ctnet"}
+        );  
+```
+
+- No NRF is used in this demo so REGISTER_NRF variable should be set to **no**
+
+### 5.4 Configuring SIM card and database
 
 - User Subscprition Profile: The UE used in this demo and tutorial has  the below profile. If the user profile is different then the corresponding entry should be present in the mysql database. The database file is [OPENXG_DB.sql](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-amf/-/blob/bupt_amf/etc/openxg.sql) 
 
@@ -391,13 +571,22 @@ Load AMF system configuration file(/etc/openxg/amf.conf)
 
 ## 7. Analyzing the Results
 
+| Network Function | Ip-address            |
+|:---------------- |:--------------------- |
+| mysql            | 127.0.0.1 (5G-CCP VM) |
+| AMF (NGAP)       | 192.168.199.28        |
+| SMF (SBI,N4)     | 192.168.122.197       |
+| UPF/SPGWU        | 192.168.199.126       |
+| Amarisoft gNB    | 192.168.199.241       |
+| UE address range | 192.169.0.0/24        |
+
 - Log files and pcaps for the demo
 
 | file_name                                                 |
 | :-------------------------------------------------------- |
 | [amf.log](./results/cotsue/logs/amf.log)     |
 | [smf.log](./results/cotsue/logs/smf.log)     |
-| [spgw-u.log](./results/cotsue/logs/spgwu.log) |
+| [spgwu.log](./results/cotsue/logs/spgwu.log) |
 | [core.pcap](./results/cotsue/pcap/core.pcap) |
 
 ### 7.1 Analyzing initial message exchange
@@ -423,4 +612,4 @@ Using wireshark open core.pcap  use the filter `ngap || http || pfcp || gtp`
 
 ## 8. Demo Video
 
-- Here is the link to the [video](https://drive.google.com/file/d/1oPzYoVwbV5zzn0TV17AfqVOsxxIdGJXT/view?usp=sharing)
+- Here is the link to the [video](https://youtu.be/N5wuhh-1dxk)
