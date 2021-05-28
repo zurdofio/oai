@@ -180,7 +180,7 @@ iperf Done.
 
 * For detailed analysis of messages, please refer previous tutorial of [testing with dsTester](./docs/DEPLOY_SA5G_WITH_DS_TESTER.md).
 
-## 8. Trying Some Advanced Stuff ##
+## 9. Trying Some Advanced Stuff ##
 
 Here we try some scaling test with gnbsim. There are additional IMSIs are added into database (208950000000031-208950000000040). Now we create few more gnbsim instances (4 more for now). We use same script to generate additional instance as follow -
 ```bash

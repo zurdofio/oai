@@ -454,7 +454,7 @@ IPV4_POOL/IPV6_POOL : Above this location in the configuration file, select the 
   MNC - 11
   ```
 
-## 6. Starting the network functions
+## 6. Starting Network Functions
 
 - Open two terminals on the host machine and login to 5G-CCP (AMF, SMF) and 5G-UP (SPGWU) virtual machines. Start taking pcaps at the respective interfaces to analyse them later. 
 - Execute the below commands in the respected virtual machines. 
