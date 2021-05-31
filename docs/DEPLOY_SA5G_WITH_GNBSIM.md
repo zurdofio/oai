@@ -33,7 +33,7 @@
 | AMF         | `develop`               | `82ca64fe8d79dbadbb1a495124ee26352f81bd7a` | X            | X              |
 | SMF         | `develop`               | `0dba68d6a01e1dad050f47437647f62d40acaec6` | X            | X              |
 | NRF         | `develop`               | `0e877cb5b80a9c74fa6abca60b95e2d3d22f7a52` | X            | X              |
-| SPGW-U-TINY | `gtp_extension_header`  | `b628036d2e6060da8ba77c5e4cdde35bf18a62a5` | X            | Releasing soon |
+| SPGW-U-TINY | `gtp_extension_header`  | `b628036d2e6060da8ba77c5e4cdde35bf18a62a5` | X            | X              |
 
 <br/>
 
@@ -172,15 +172,15 @@ iperf Done.
 
 | Pcap/log files                                                                             |
 |:------------------------------------------------------------------------------------------ |
-| [5gcn-deployment-gnbsim.pcap](./results/pcap/5gcn-deployment-gnbsim.pcap)                  |
-| [amf.log](./results/logs/amf.log), [initialmessage.log](./results/logs/initialmessage.log) |
-| [smf.log](./results/logs/smf.log)                                                          |
-| [nrf.log](./results/logs/nrf.log)                                                          |
-| [spgwu.log](./results/logs/spgwu.log)   
+| [5gcn-deployment-gnbsim.pcap](./results/gnbSIM/5gcn-deployment-gnbsim.pcap)                  |
+| [amf.log](./results/dsTest/logs/amf.log), [initialmessage.log](./results/dsTest/logs/initialmessage.log) |
+| [smf.log](./results/dsTest/logs/smf.log)                                                          |
+| [nrf.log](./results/dsTest/logs/nrf.log)                                                          |
+| [spgwu.log](./results/dsTest/logs/spgwu.log)   
 
 * For detailed analysis of messages, please refer previous tutorial of [testing with dsTester](./docs/DEPLOY_SA5G_WITH_DS_TESTER.md).
 
-## 8. Trying Some Advanced Stuff ##
+## 9. Trying Some Advanced Stuff ##
 
 Here we try some scaling test with gnbsim. There are additional IMSIs are added into database (208950000000031-208950000000040). Now we create few more gnbsim instances (4 more for now). We use same script to generate additional instance as follow -
 ```bash
