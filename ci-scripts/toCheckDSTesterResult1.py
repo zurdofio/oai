@@ -24,6 +24,7 @@ import re
 import sys
 import subprocess
 import yaml
+import logging
 
 locexist = False
 try:
@@ -33,17 +34,16 @@ try:
                 result = re.search('(?:\/.+?\/)(.+?)(?:\/.+)', str(line))
                 if result:
                     result1 = re.search('^(.*/)([^/]*)$', str(result.group(0)))
-                    print(result1.group(1))
                     subprocess.Popen(f'cp {result1.group(1)}* DS-TEST-RESULTS/',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 locexist = True
 except IOError:
-    print("File not accessible to check DSTester Summary: DS-TEST-RESULTS/dsTester_Summary.txt")
+    sys.exit("File not accessible to check DSTester Summary: DS-TEST-RESULTS/dsTester_Summary.txt")
 
 if locexist:
     try:
         with open('DS-TEST-RESULTS/5gcn.yaml') as f:
-            data = yaml.full_load(f)
+            data = yaml.load(f)
             if data["final-result"] == 'fail':
-                sys.exit(-1)
+                sys.exit('DsTester final result FAILED')
     except IOError:
-        print("File not accessible to check DSTester result: DS-TEST-RESULTS/5gcn.yaml")
+        sys.exit("File not accessible to check DSTester result: DS-TEST-RESULTS/5gcn.yaml")

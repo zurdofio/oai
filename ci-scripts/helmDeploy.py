@@ -31,7 +31,6 @@
 # Import
 #-----------------------------------------------------------
 import logging
-import sshconnection as SSH
 import html
 import os
 import re
@@ -46,13 +45,9 @@ logging.basicConfig(
 
 class ClusterDeploy:
 	def __init__(self):
-		self.remoteIPAdd = ""
-		self.remoteUserName = ""
-		self.remotePassword = ""
 		self.OCUserName = ""
 		self.OCPassword = ""
 		self.OCProjectName = ""
-		self.sourceCodePath = "/tmp/CI-CN5G-FED-RHEL8"
 		self.imageTags = ""
 		self.mode = ""
 
@@ -61,21 +56,14 @@ class ClusterDeploy:
 #-----------------$
 
 	def Deploy_5gcn(self):
-		lIpAddr = self.remoteIPAdd
-		lUserName = self.remoteUserName
-		lPassWord = self.remotePassword
-		lSourcePath = self.sourceCodePath
 		ocUserName = self.OCUserName
 		ocPassword = self.OCPassword
 		ocProjectName = self.OCProjectName
 		limageTags = self.imageTags
-		if lIpAddr == '' or lUserName == '' or lPassWord == '' or lSourcePath == '' or ocUserName == '' or ocPassword == '' or ocProjectName == '' or limageTags == '':
+		if ocUserName == '' or ocPassword == '' or ocProjectName == '' or limageTags == '':
 			sys.exit('Insufficient Parameter')
-		logging.debug('Running on server: ' + lIpAddr)
-		mySSH = SSH.SSHConnection()
-		mySSH.open(lIpAddr, lUserName, lPassWord)
-		mySSH.command('cd ' + lSourcePath, '\$', 5)
 
+		logging.debug('\u001B[1m   Checking all 5GCN component IMAGES are pre existing and correct\u001B[0m')
 		images = limageTags.split(',')
 		for image in images:
 			eachImage = image.split(':')
@@ -84,15 +72,17 @@ class ClusterDeploy:
 			if imageName == 'mysql':
 				continue
 			# Check if image is exist on the Red Hat server, before pushing it to OC cluster
-			mySSH.command2("sudo podman image inspect --format='Size = {{.Size}} bytes' " + imageName + ":" + imageTag + f' | tee -a {lSourcePath}/archives/{imageName}_image_info.log', 60, silent=True)
-			if mySSH.cmd2Results.count('no such image') != 0:
+			subprocess.run(f'echo "IMAGENAME_TAG: {imageName}:{imageTag} > archives/{imageName}_image_info.log', shell=True)
+			res = subprocess.check_output("sudo podman image inspect --format='Size = {{.Size}} bytes' " + f'{imageName}:{imageTag} | tee -a archives/{imageName}_image_info.log', shell=True, universal_newlines=True)
+			subprocess.run(f"sudo podman image inspect --format='Date = {{.Created}}' " + f'{imageName}:{imageTag} | tee -a archives/{imageName}_image_info.log', shell=True)
+			res2 = re.search('no such image', str(res.strip()))
+			if res2 is not None:
 				logging.error(f'\u001B[1m No such image {imageName}]\u001B[0m')
-				mySSH.close()
 				sys.exit(-1)
 			else:
-				result = re.search('Size *= *(?P<size>[0-9\-]+) *bytes', mySSH.cmd2Results)
-				if result is not None:
-					imageSize = float(result.group('size'))
+				res2 = re.search('Size *= *(?P<size>[0-9\-]+) *bytes', str(res.strip()))
+				if res2 is not None:
+					imageSize = float(res2.group('size'))
 					imageSize = imageSize / 1000
 					if imageSize < 1000:
 						logging.debug(f'\u001B[1m   {imageName} size is ' + ('%.0f' % imageSize) + ' kbytes\u001B[0m')
@@ -107,26 +97,27 @@ class ClusterDeploy:
 					logging.debug(f'{imageName} size is unknown')
 
 		# logging to OC Cluster and then switch to corresponding project
-		mySSH.command2(f'oc login -u {ocUserName} -p {ocPassword}', 6, silent=True)
-		if mySSH.cmd2Results.count('Login successful.') == 0:
+		res = subprocess.check_output(f'oc login -u {ocUserName} -p {ocPassword}', shell=True, universal_newlines=True)
+		res2 = re.search('Login successful.', str(res.strip()))
+		if res2 is None:
 			logging.error('\u001B[1m OC Cluster Login Failed\u001B[0m')
-			mySSH.close()
 			sys.exit(-1)
 		else:
 			logging.debug('\u001B[1m   Login to OC Cluster Successfully\u001B[0m')
-		mySSH.command2(f'oc project {ocProjectName}', 6, silent=True)
-		if mySSH.cmd2Results.count(f'Already on project "{ocProjectName}"') == 0 and mySSH.cmd2Results.count(f'Now using project "{self.OCProjectName}"') == 0:
+		res = subprocess.check_output(f'oc project {ocProjectName}', shell=True, universal_newlines=True)
+		res2 = re.search(f'Already on project "{ocProjectName}"', str(res.strip()))
+		res3 = re.search(f'Now using project "{self.OCProjectName}"', str(res.strip()))
+		if res2 is None and res3 is None:
 			logging.error(f'\u001B[1m Unable to access OC project {ocProjectName}\u001B[0m')
-			mySSH.close()
 			sys.exit(-1)
 		else:
 			logging.debug(f'\u001B[1m   Now using project {ocProjectName}\u001B[0m')
 
 		# Tag the image and push to the OC cluster
-		mySSH.command2('oc whoami -t | sudo podman login -u ' + ocUserName + ' --password-stdin https://default-route-openshift-image-registry.apps.5glab.nsa.eurecom.fr/ --tls-verify=false', 6, silent=True)
-		if mySSH.cmd2Results.count('Login Succeeded!') == 0:
+		res = subprocess.check_output('oc whoami -t | sudo podman login -u ' + ocUserName + ' --password-stdin https://default-route-openshift-image-registry.apps.5glab.nsa.eurecom.fr/ --tls-verify=false', shell=True, universal_newlines=True)
+		res2 = re.search('Login Succeeded!', str(res.strip()))
+		if res2 is None:
 			logging.error('\u001B[1m Podman Login to OC Cluster Registry Failed\u001B[0m')
-			mySSH.close()
 			sys.exit(-1)
 		else:
 			logging.debug('\u001B[1m Podman Login to OC Cluster Registry Successfully\u001B[0m')
@@ -136,24 +127,26 @@ class ClusterDeploy:
 			imageTag = eachImage[1]
 			if imageName == 'mysql':
 				continue
-			mySSH.command2(f'cd {lSourcePath} && oc create -f openshift/{imageName}-image-stream.yml 2>&1 | tee -a archives/5gcn_imagestream_summary.txt', 6, silent=True)
-			if mySSH.cmd2Results.count('(AlreadyExists):') == 0 and mySSH.cmd2Results.count('created') == 0:
+			res = subprocess.check_output(f'oc create -f openshift/{imageName}-image-stream.yml 2>&1 | tee -a archives/5gcn_imagestream_summary.txt || true', stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+			res2 = re.search('already exists', str(res.strip()))
+			res3 = re.search('created', str(res.strip()))
+			if res2 is None and res3 is None:
 				logging.error(f'\u001B[1m Image Stream "{imageName}" Creation Failed on OC Cluster {ocProjectName}\u001B[0m')
-				mySSH.close()
 				sys.exit(-1)
 			else:
 				logging.debug(f'\u001B[1m   Image Stream "{imageName}" created on OC project {ocProjectName}\u001B[0m')
-			mySSH.command2(f'sudo podman tag {imageName}:{imageTag} default-route-openshift-image-registry.apps.5glab.nsa.eurecom.fr/{self.OCProjectName}/{imageName}:{imageTag}', 6, silent=True)
-			mySSH.command2(f'sudo podman push default-route-openshift-image-registry.apps.5glab.nsa.eurecom.fr/{self.OCProjectName}/{imageName}:{imageTag} --tls-verify=false 2>&1 | tee -a archives/5gcn_imagepush_summary.txt', 60, silent=True)
+			subprocess.run(f'sudo podman tag {imageName}:{imageTag} default-route-openshift-image-registry.apps.5glab.nsa.eurecom.fr/{self.OCProjectName}/{imageName}:{imageTag}', shell=True)
+			res = subprocess.check_output(f'sudo podman push default-route-openshift-image-registry.apps.5glab.nsa.eurecom.fr/{self.OCProjectName}/{imageName}:{imageTag} --tls-verify=false 2>&1 | tee -a archives/5gcn_imagepush_summary.txt', shell=True, universal_newlines=True)
 			time.sleep(10)
-			if mySSH.cmd2Results.count('Storing signatures') == 0:
+			res2 = re.search('Storing signatures', str(res.strip()))
+			if res2 is None:
 				logging.error(f'\u001B[1m Image "{imageName}" push to OC Cluster Registry Failed\u001B[0m')
-				mySSH.close()
 				sys.exit(-1)
 			else:
 				logging.debug(f'\u001B[1m Image "{imageName}" push to OC Cluster Registry Successfully\u001B[0m')
 
 		# Using helm charts deployment
+		logging.debug(f'\u001B[1m Deploying 5GCN Components on the Cluster using Helm Charts\u001B[0m')
 		passPods = 0
 		time.sleep(5)
 		for image in images:
@@ -161,8 +154,8 @@ class ClusterDeploy:
 			imageName = eachImage[0]
 			imageTag = eachImage[1]
 			nameSufix = ''
-			mySSH.command(f'sed -i -e "s#PROJECT#{ocProjectName}#g" ./charts/{imageName}/values.yaml', '\$', 6, silent=True)
-			mySSH.command(f'sed -i -e "s#TAG#{imageTag}#g" ./charts/{imageName}/values.yaml', '\$', 6, silent=True)
+			subprocess.run(f'sed -i -e "s#PROJECT#{ocProjectName}#g" ./charts/{imageName}/values.yaml', shell=True)
+			subprocess.run(f'sed -i -e "s#TAG#{imageTag}#g" ./charts/{imageName}/values.yaml', shell=True)
 			if imageName == 'oai-nrf':
 				nameSufix = 'nrf'
 			elif imageName == 'oai-amf':
@@ -171,64 +164,67 @@ class ClusterDeploy:
 				nameSufix = 'smf'
 			elif imageName == 'oai-spgwu-tiny':
 				nameSufix = 'spgwu'
-			mySSH.command2(f'cd {lSourcePath} && helm install {imageName} ./charts/{imageName}/ | tee -a archives/5gcn_helm_summary.txt 2>&1', 10, silent=True)
-			if mySSH.cmd2Results.count('STATUS: deployed') == 0:
+			res = subprocess.check_output(f'helm install {imageName} ./charts/{imageName}/ | tee -a archives/5gcn_helm_summary.txt 2>&1', shell=True, universal_newlines=True)
+			res2 = re.search('STATUS: deployed', str(res.strip()))
+			if res2 is None:
+				subprocess.run(f'echo "{imageName}: HELM KO" > archives/5gcn_helm_summary.txt', shell=True)
 				logging.error(f'\u001B[1m Deploying "{imageName}" Failed using helm chart on OC Cluster\u001B[0m')
+				logging.error(f'\u001B[1m 	5GCN Deployment: KO \u001B[0m')
+				subprocess.run(f'echo "DEPLOYMENT: KO" > archives/deployment_status.log', shell=True)
 				self.UnDeploy_5gcn()
-				self.AnalyzeLogFile_5gcn()
 				sys.exit(-1)
 			else:
+				subprocess.run(f'echo "{imageName}: HELM OK" > archives/5gcn_helm_summary.txt', shell=True)
 				logging.debug(f'\u001B[1m   Deployed "{imageName}" Successfully using helm chart\u001B[0m')
 			time.sleep(20)
-			mySSH.command2(f'oc get pods -o wide -l app.kubernetes.io/instance={imageName} | tee -a {lSourcePath}/archives/5gcn_pods_summary.txt', 6, silent=True)
-			result = re.search(f'{imageName}[\S\d\w]+', mySSH.cmd2Results)
-			podName = result.group(0)
+			res = subprocess.check_output(f'oc get pods -o wide -l app.kubernetes.io/instance={imageName} | tee -a archives/5gcn_pods_summary.txt', shell=True, universal_newlines=True)
+			res2 = re.search(f'{imageName}[\S\d\w]+', str(res.strip()))
+			podName = res2.group(0)
 			isRunning = False
 			count = 0
-			while count < 3 and isRunning == False:
-				time.sleep(10)
+			while count < 6 and isRunning == False:
+				time.sleep(5)
 				if imageName == 'mysql':
-					mySSH.command2(f'oc exec {podName} -i -t -- mysqladmin -u root --password=linux ping', 6, silent=True)
+					res = subprocess.check_output(f'oc exec {podName} -i -t -- mysqladmin -u root --password=linux ping || true', stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
 				else:
-					mySSH.command2(f'oc exec {podName} -c {nameSufix} -it -- ps aux', 6, silent=True)
-				if mySSH.cmd2Results.count(f'oai_{nameSufix}') != 0 or mySSH.cmd2Results.count(f'mysqld is alive') != 0 :
+					res = subprocess.check_output(f'oc exec {podName} -c {nameSufix} -- ps aux || true', stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+				res2 = re.search(f'oai_{nameSufix}', str(res.strip()))
+				res3 = re.search(f'mysqld is alive', str(res.strip()))
+				if res2 is not None or res3 is not None:
 					logging.debug(f'\u001B[1m POD "{imageName}" Service Running Sucessfully\u001B[0m')
 					isRunning = True
 					passPods += 1
 				count +=1	
 			if isRunning == False:
 				logging.error(f'\u001B[1m POD "{imageName}" Service Running FAILED \u001B[0m')
-				self.UnDeploy_5gcn()
-				self.AnalyzeLogFile_5gcn()
-				sys.exit(-1)
+				#self.UnDeploy_5gcn()
+				#sys.exit(-1)
 
 		if passPods == 5:
-			logging.debug(f'\u001B[1m   5gcn Deployment: OK \u001B[0m')
-			mySSH.command2(f'echo "DEPLOYMENT: OK" > {lSourcePath}/archives/deployment_status.log', 5, silent=True)
+			logging.debug(f'\u001B[1m   5GCN Deployment: OK \u001B[0m')
+			subprocess.run(f'echo "DEPLOYMENT: OK" > archives/deployment_status.log', shell=True)
 		else:
-			logging.error(f'\u001B[1m 	5gcn Deployment: KO \u001B[0m')
-			mySSH.command2(f'echo "DEPLOYMENT: KO" > {lSourcePath}/archives/deployment_status.log', 5, silent=True)
+			logging.error(f'\u001B[1m 	5GCN Deployment: KO \u001B[0m')
+			subprocess.run(f'echo "DEPLOYMENT: KO" > archives/deployment_status.log', shell=True)
 			self.UnDeploy_5gcn()
-			self.AnalyzeLogFile_5gcn()
 			sys.exit(-1)
+		subprocess.run('oc logout', shell=True)
 		
 	def UnDeploy_5gcn(self):
-		mySSH = SSH.SSHConnection()
-		mySSH.open(self.remoteIPAdd, self.remoteUserName, self.remotePassword)
-		mySSH.command('cd ' + self.sourceCodePath, '\$', 5)
-		logging.debug('\u001B[1m   UnDeploying the 5gcn\u001B[0m')
+		logging.debug('\u001B[1m   UnDeploying the 5GCN\u001B[0m')
 		# logging to OC Cluster and then switch to corresponding project
-		mySSH.command2(f'oc login -u {self.OCUserName} -p {self.OCPassword}', 6, silent=True)
-		if mySSH.cmd2Results.count('Login successful.') == 0:
+		res = subprocess.check_output(f'oc login -u {self.OCUserName} -p {self.OCPassword}|| true', stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+		res2 = re.search(f'Login successful.', str(res.strip()))
+		if res2 is None:
 			logging.error('\u001B[1m OC Cluster Login Failed\u001B[0m')
-			mySSH.close()
 			sys.exit(-1)
 		else:
 			logging.debug('\u001B[1m   Login to OC Cluster Successfully\u001B[0m')
-		mySSH.command2(f'oc project {self.OCProjectName}', 6, silent=True)
-		if mySSH.cmd2Results.count(f'Already on project "{self.OCProjectName}"') == 0 and mySSH.cmd2Results.count(f'Now using project "{self.OCProjectName}"') == 0:
+		res = subprocess.check_output(f'oc project {self.OCProjectName} || true', stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+		res2 = re.search(f'Already on project "{self.OCProjectName}"', str(res.strip()))
+		res3 = re.search(f'Now using project "{self.OCProjectName}"', str(res.strip()))
+		if res2 is None and res3 is None:
 			logging.error(f'\u001B[1m Unable to access OC project {self.OCProjectName}\u001B[0m')
-			mySSH.close()
 			sys.exit(-1)
 		else:
 			logging.debug(f'\u001B[1m   Now using project {self.OCProjectName}\u001B[0m')
@@ -239,52 +235,46 @@ class ClusterDeploy:
 			eachImage = image.split(':')
 			imageName = eachImage[0]
 			imageTag = eachImage[1]
-			mySSH.command2(f'cd {self.sourceCodePath} && helm uninstall {imageName} | tee -a archives/5gcn_helm_summary.txt 2>&1', 6, silent=True)
-			if mySSH.cmd2Results.count(f'release "{imageName}" uninstalled') != 0:
+			res = subprocess.check_output(f'helm uninstall {imageName} | tee -a archives/5gcn_helm_summary.txt 2>&1', stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+			res2 = re.search(f'release "{imageName}" uninstalled', str(res.strip()))
+			res3 = re.search(f'Error: uninstall: Release not loaded: {imageName}: release: not found', str(res.strip()))
+			if res2 is not None:
 				logging.debug(f'\u001B[1m   UnDeployed "{imageName}" Successfully on OC Cluster\u001B[0m')
-			elif mySSH.cmd2Results.count(f'Error: uninstall: Release not loaded: {imageName}: release: not found') != 0:
-				logging.debug(f'\u001B[1m   No Resource "{imageName}" on OC Cluster\u001B[0m')
+			elif res3 is not None:
+				logging.debug(f'\u001B[1m   No Resource "{imageName}" found on OC Cluster on project "{self.OCProjectName}"\u001B[0m')
 			else:
 				logging.error(f'\u001B[1m UnDeploying "{imageName}" Failed using helm chart on OC Cluster\u001B[0m')
 			time.sleep(2)
 			# Delete images and imagestream
 			if imageName == 'mysql':
 				continue
-			mySSH.command2(f'sudo podman rmi default-route-openshift-image-registry.apps.5glab.nsa.eurecom.fr/{self.OCProjectName}/{imageName}:{imageTag}', 6, silent=True)
-			mySSH.command2(f'oc delete is {imageName}', 6, silent=True)
-			logging.debug(f'\u001B[1m Deleted the "{imageName}" Image and ImageStream\u001B[0m')
-		mySSH.command2('oc logout', 6, silent=True)
-		mySSH.close()
-		self.AnalyzeLogFile_5gcn()
+			res = subprocess.check_output(f'sudo podman rmi default-route-openshift-image-registry.apps.5glab.nsa.eurecom.fr/{self.OCProjectName}/{imageName}:{imageTag} || true', stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+			res2 = re.search('in local storage: no such image', str(res.strip()))
+			res = subprocess.check_output(f'oc delete is {imageName} || true', stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+			res3 = re.search('Error from server (NotFound):', str(res.strip()))
+			if res2 is None and res3 is None:
+				logging.debug(f'\u001B[1m Deleted the "{imageName}" Image and ImageStream\u001B[0m')
+			else:
+				logging.debug(f'\u001B[1m No Resource "{imageName}" Image and ImageStream found\u001B[0m')
+		subprocess.run('oc logout', shell=True)
 
-	def GetLogsConfigs(self):
-		lIpAddr = self.remoteIPAdd
-		lUserName = self.remoteUserName
-		lPassWord = self.remotePassword
-		lSourcePath = self.sourceCodePath
-		# copying the pcaps
-		lssh = subprocess.Popen(f'ls /nfs/prov-vols | grep {self.OCProjectName}-cn5g-pvc',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE, encoding='utf-8').stdout.readlines()
-		pStorage = str(lssh[0]).strip()
-		subprocess.Popen(f'mkdir -p archives/pcap',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-		subprocess.Popen(f'cp /nfs/prov-vols/{pStorage}/* archives/pcap/',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-		# copy the pods logs
-		mySSH = SSH.SSHConnection()
-		mySSH.open(lIpAddr, lUserName, lPassWord)
-		mySSH.command2(f'oc login -u {self.OCUserName} -p {self.OCPassword}', 6, silent=True)
-		if mySSH.cmd2Results.count('Login successful.') == 0:
+	def GetLogsConfigsPcaps(self):
+		# copying the pod's logs, configs, pcaps
+		logging.debug(f'\u001B[1m   Copying the PODs log, config & pcap\u001B[0m')
+		res = subprocess.check_output(f'oc login -u {self.OCUserName} -p {self.OCPassword}|| true', stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+		res2 = re.search(f'Login successful.', str(res.strip()))
+		if res2 is None:
 			logging.error('\u001B[1m OC Cluster Login Failed\u001B[0m')
-			mySSH.close()
 			sys.exit(-1)
-		else:
-			logging.debug('\u001B[1m   Login to OC Cluster Successfully\u001B[0m')
-		mySSH.command2(f'oc project {self.OCProjectName}', 6, silent=True)
-		if mySSH.cmd2Results.count(f'Already on project "{self.OCProjectName}"') == 0 and mySSH.cmd2Results.count(f'Now using project "{self.OCProjectName}"') == 0:
+		res = subprocess.check_output(f'oc project {self.OCProjectName} || true', stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+		res2 = re.search(f'Already on project "{self.OCProjectName}"', str(res.strip()))
+		res3 = re.search(f'Now using project "{self.OCProjectName}"', str(res.strip()))
+		if res2 is None and res3 is None:
 			logging.error(f'\u001B[1m Unable to access OC project {self.OCProjectName}\u001B[0m')
-			mySSH.close()
 			sys.exit(-1)
-		else:
-			logging.debug(f'\u001B[1m   Now using project {self.OCProjectName}\u001B[0m')
-		mySSH.command2(f'mkdir -p {lSourcePath}/archives/logs', 6, silent=True)
+		subprocess.run(f'mkdir -p archives/pcap', shell=True)
+		subprocess.run(f'mkdir -p archives/logs', shell=True)
+		subprocess.run(f'mkdir -p archives/config', shell=True)
 		images = self.imageTags.split(',')
 		for image in images:
 			eachImage = image.split(':')
@@ -301,30 +291,17 @@ class ClusterDeploy:
 			elif imageName == 'oai-spgwu-tiny':
 				nameSufix = 'spgwu'
 				nameSufix1 = 'spgwu-tiny'
-			mySSH.command2(f'oc get pods -o wide -l app.kubernetes.io/instance={imageName}', 6, silent=True)
-			result = re.search(f'{imageName}[\S\d\w]+', mySSH.cmd2Results)
-			podName = result.group(0)
-			mySSH.command2(f'oc logs {podName} {nameSufix} > {lSourcePath}/archives/logs/{imageName}_pod.log', 10, silent=True)
+			res = subprocess.check_output(f'oc get pods -o wide -l app.kubernetes.io/instance={imageName} || true', stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+			res2 = re.search(f'{imageName}[\S\d\w]+', str(res.strip()))
+			podName = res2.group(0)
+			subprocess.run(f'oc logs {podName} {nameSufix} > archives/logs/{imageName}_pod.log', shell=True)
 			time.sleep(1)
 			if imageName == 'oai-spgwu-tiny':
-				mySSH.command2(f'oc cp {podName}:/openair-{nameSufix1}/etc/ {lSourcePath}/archives/config/ -c {nameSufix}', 6, silent=True)
+				subprocess.run(f'oc cp {podName}:/openair-{nameSufix1}/etc/ archives/config/ -c {nameSufix}', shell=True)
+				subprocess.run(f'oc cp {podName}:/pcap/ archives/pcap/ -c tcpdump', shell=True)
 			else:
-				mySSH.command2(f'oc cp {podName}:/openair-{nameSufix}/etc/ {lSourcePath}/archives/config/ -c {nameSufix}', 6, silent=True)
-		mySSH.command('oc logout', '\$', 6)
-		mySSH.close()
-
-	def AnalyzeLogFile_5gcn(self):
-		lIpAddr = self.remoteIPAdd
-		lUserName = self.remoteUserName
-		lPassWord = self.remotePassword
-		lSourcePath = self.sourceCodePath
-		mySSH = SSH.SSHConnection()
-		mySSH.open(lIpAddr, lUserName, lPassWord)
-		mySSH.command('cd ' + lSourcePath, '\$', 5)
-		mySSH.copyin(lIpAddr, lUserName, lPassWord, lSourcePath + '/archives/*', '../archives/')
-		mySSH.command('rm -rf ./archives', '\$', 5)
-		mySSH.command('oc logout', '\$', 6)
-		mySSH.close()
+				subprocess.run(f'oc cp {podName}:/openair-{nameSufix}/etc/ archives/config/ -c {nameSufix}', shell=True)
+		subprocess.run('oc logout', shell=True)
 
 def Usage():
 	print('----------------------------------------------------------------------------------------------------------------------')
@@ -335,9 +312,6 @@ def Usage():
 	print('  --help  Show this help.')
 	print('---------------------------------------------------------------------------------------------- Mandatory Options -----')
 	print('  --mode=[Deploy/UnDeploy]')
-	print('  --remoteIPAdd=[IP Address of remote Server]')
-	print('  --remoteUserName=[UserName of remote Server]')
-	print('  --remotePassword=[Password of remote Server]')
 	print('  --OCUserName=[Cluster UserName]')
 	print('  --OCPassword=[Cluster Password]')
 	print('  --OCProjectName=[Cluster Project name]')
@@ -345,6 +319,7 @@ def Usage():
 	print('------------------------------------------------------------------------------------------------- Actions Syntax -----')
 	print('python3 helmDeploy.py --mode=Deploy [Mandatory Options]')
 	print('python3 helmDeploy.py --mode=UnDeploy [Mandatory Options]')
+	print('python3 helmDeploy.py --mode=GetLogs [Mandatory Options]')	
 
 
 
@@ -366,15 +341,6 @@ while len(argvs) > 1:
 	elif re.match('^\-\-mode=(.+)$', myArgv, re.IGNORECASE):
 		matchReg = re.match('^\-\-mode=(.+)$', myArgv, re.IGNORECASE)
 		CN.mode = matchReg.group(1)	
-	elif re.match('^\-\-remoteIPAdd=(.+)$', myArgv, re.IGNORECASE):
-		matchReg = re.match('^\-\-remoteIPAdd=(.+)$', myArgv, re.IGNORECASE)
-		CN.remoteIPAdd = matchReg.group(1)
-	elif re.match('^\-\-remoteUserName=(.+)$', myArgv, re.IGNORECASE):
-		matchReg = re.match('^\-\-remoteUserName=(.+)$', myArgv, re.IGNORECASE)
-		CN.remoteUserName = matchReg.group(1)
-	elif re.match('^\-\-remotePassword=(.+)$', myArgv, re.IGNORECASE):
-		matchReg = re.match('^\-\-remotePassword=(.+)$', myArgv, re.IGNORECASE)
-		CN.remotePassword = matchReg.group(1)
 	elif re.match('^\-\-OCUserName=(.+)$', myArgv, re.IGNORECASE):
 		matchReg = re.match('^\-\-OCUserName=(.+)$', myArgv, re.IGNORECASE)
 		CN.OCUserName = matchReg.group(1)
@@ -395,4 +361,4 @@ if CN.mode == 'Deploy':
 elif CN.mode == 'UnDeploy':
 	CN.UnDeploy_5gcn()
 elif CN.mode == 'GetLogs':
-	CN.GetLogsConfigs()
+	CN.GetLogsConfigsPcaps()
