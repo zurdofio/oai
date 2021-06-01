@@ -1,3 +1,14 @@
+<h1 align="center">
+    <a href="https://openairinterface.org/"><img src="https://openairinterface.org/wp-content/uploads/2015/06/cropped-oai_final_logo.png" alt="OAI" width="550"></a>
+</h1>
+
+<p align="center">
+    <a href="https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-OAI--Public--V1.1-blue" alt="License"></a>
+    <a href="https://jenkins-oai.eurecom.fr/job/OAI-CN5G-AMF/"><img src="https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins-oai.eurecom.fr%2Fjob%2FOAI-CN5G-AMF%2F&label=build%20AMF"></a>
+    <a href="https://jenkins-oai.eurecom.fr/job/OAI-CN5G-NRF/"><img src="https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins-oai.eurecom.fr%2Fjob%2FOAI-CN5G-NRF%2F&label=build%20NRF"></a>
+    <a href="https://jenkins-oai.eurecom.fr/job/OAI-CN5G-SMF/"><img src="https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins-oai.eurecom.fr%2Fjob%2FOAI-CN5G-SMF%2F&label=build%20SMF"></a>
+</p>
+
 ------------------------------------------------------------------------------
 
                              OPENAIR-CN-5G
@@ -9,10 +20,14 @@ OPENAIR-CN-5G is an implementation of the 3GPP specifications for the 5G Core Ne
 At the moment, it contains the following network elements:
 
 * Access and Mobility Management Function (**AMF**)
+* Authentication Server Management Function (**AUSF**)
+* Network Repository Function (**NRF**)
 * Session Management Function (**SMF**)
+* Unified Data Management (**UDM**)
+* Unified Data Repository (**UDR**)
 * User Plane Function (**UPF**)
 
-Each has its own repository.
+Each has its own repository. Some of these repositories are still private.
 
 This repository is a **Federation of the OpenAir CN 5G repositories**.
 
