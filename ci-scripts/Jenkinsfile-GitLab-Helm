@@ -189,11 +189,20 @@ pipeline {
                 sh "git clone https://${git_username}:${git_token}@github.com/OPENAIRINTERFACE/chasseur.git . > ../git_clone.log 2>&1"
                 sh "git checkout develop >> ../git_clone.log 2>&1"
                 try {
-                  sh "python3 jenkins/dogmatix-agent.py -f jenkins/suit.yaml | tee ../DS-TEST-RESULTS/dsTester_Summary.txt"
+                  sh "python3 jenkins/dogmatix-agent.py -f jenkins/suit-helm-charts.yaml | tee ../DS-TEST-RESULTS/dsTester_Summary.txt"
                 } catch (Exception e) {
                   currentBuild.result = 'FAILURE'
                   echo "dsTester Running FAILED"
                 } 
+              }
+            }
+            withCredentials([
+              [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.OC_Credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
+            ]) {
+              try {
+                sh "python3 ci-scripts/helmDeploy.py --mode=GetLogs --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
+              } catch (Exception e) {
+                echo "Unable to collect the logs, configs, pcaps"
               }
             }
             sh "python3 ./ci-scripts/toCheckDSTesterResult1.py"
@@ -208,11 +217,6 @@ pipeline {
           withCredentials([
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.OC_Credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
           ]) {
-            try {
-              sh "python3 ci-scripts/helmDeploy.py --mode=GetLogs --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
-            } catch (Exception e) {
-              echo "Unable to collect the logs, configs, pcaps"
-            }
             sh "python3 ci-scripts/helmDeploy.py --mode=UnDeploy --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
           }
         }

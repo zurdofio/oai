@@ -24,24 +24,25 @@ import re
 import sys
 import subprocess
 import yaml
-import logging
+import os
 
 locexist = False
+cwd = os.getcwd()
 try:
-    with open('DS-TEST-RESULTS/dsTester_Summary.txt') as f:
+    with open(cwd + '/DS-TEST-RESULTS/dsTester_Summary.txt') as f:
         for line in f:
             if re.search('Result file is available here', str(line)):
                 result = re.search('(?:\/.+?\/)(.+?)(?:\/.+)', str(line))
                 if result:
                     result1 = re.search('^(.*/)([^/]*)$', str(result.group(0)))
-                    subprocess.Popen(f'cp {result1.group(1)}* DS-TEST-RESULTS/',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                    subprocess.check_output(f'cp {result1.group(1)}* DS-TEST-RESULTS/', stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
                 locexist = True
 except IOError:
     sys.exit("File not accessible to check DSTester Summary: DS-TEST-RESULTS/dsTester_Summary.txt")
 
 if locexist:
     try:
-        with open('DS-TEST-RESULTS/5gcn.yaml') as f:
+        with open(cwd + '/DS-TEST-RESULTS/5gcn.yaml') as f:
             data = yaml.load(f)
             if data["final-result"] == 'fail':
                 sys.exit('DsTester final result FAILED')

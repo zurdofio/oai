@@ -151,8 +151,8 @@ class HtmlReport():
 							sizeInt = int(sizeInt / 1000000)
 							size = str(sizeInt) + ' MB'
 			imageLog.close()
-			helmState = 'N/A'
-			podState = 'N/A'
+			helmState = 'UNKNOW'
+			podState = 'UNKNOW'
 			cmd = f'egrep -c "{imageName}: HELM OK" archives/5gcn_helm_summary.txt || true'
 			ret = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, encoding='utf-8')
 			if ret.stdout is not None:
@@ -183,23 +183,23 @@ class HtmlReport():
 			elif helmState == 'KO':
 				self.file.write('       <td bgcolor = "Red"><b><font color="white">' + helmState + '</font></b></td>\n')
 			else:
-				self.file.write('       <td><b><font color="white">' + helmState + '</font></b></td>\n')
+				self.file.write('       <td bgcolor = "DarkOrange"><b><font color="white">' + helmState + '</font></b></td>\n')
 			if podState == 'OK':
 				self.file.write('       <td bgcolor = "DarkGreen"><b><font color="white">' + podState + '</font></b></td>\n')
 			elif podState == 'KO':
 				self.file.write('       <td bgcolor = "Red"><b><font color="white">' + podState + '</font></b></td>\n')
 			else:
-				self.file.write('       <td><b><font color="white">' + podState + '</font></b></td>\n')
+				self.file.write('       <td bgcolor = "DarkOrange"><b><font color="white">' + podState + '</font></b></td>\n')
 			self.file.write('     </tr>\n')
 		else:
 			if imageName == 'mysql':
 				self.file.write('     <tr>\n')
 				self.file.write('       <td>mysql</td>\n')
-				self.file.write('       <td>mysql:5.7</td>\n')
+				self.file.write('       <td>mysql:5.7.30</td>\n')
 				self.file.write('       <td>N/A</td>\n')
 				self.file.write('       <td>449MB</td>\n')
-				helmState = 'N/A'
-				podState = 'N/A'
+				helmState = 'UNKNOW'
+				podState = 'UNKNOW'
 				cmd = f'egrep -c "{imageName}: HELM OK" archives/5gcn_helm_summary.txt || true'
 				ret = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, encoding='utf-8')
 				if ret.stdout is not None:
@@ -225,13 +225,13 @@ class HtmlReport():
 				elif helmState == 'KO':
 					self.file.write('       <td bgcolor = "Red"><b><font color="white">' + helmState + '</font></b></td>\n')
 				else:
-					self.file.write('       <td><b><font color="white">' + helmState + '</font></b></td>\n')
+					self.file.write('       <td bgcolor = "DarkOrange"><b><font color="white">' + helmState + '</font></b></td>\n')
 				if podState == 'OK':
 					self.file.write('       <td bgcolor = "DarkGreen"><b><font color="white">' + podState + '</font></b></td>\n')
 				elif podState == 'KO':
 					self.file.write('       <td bgcolor = "Red"><b><font color="white">' + podState + '</font></b></td>\n')
 				else:
-					self.file.write('       <td><b><font color="white">' + podState + '</font></b></td>\n')
+					self.file.write('       <td bgcolor = "DarkOrange"><b><font color="white">' + podState + '</font></b></td>\n')
 				self.file.write('     </tr>\n')
 			else:
 				self.file.write('     <tr>\n')
@@ -294,10 +294,12 @@ class HtmlReport():
 						self.file.write('      <td bgcolor = "DarkGreen"><b><font color="white">OK</font></b></td>\n')
 					else:
 						self.file.write('      <td bgcolor = "DarkOrange"><b><font color="white">UNKNOW</font></b></td>\n')
-					#testDetails += '</pre>\n'
-					self.file.write('     <td>' + str(data['scenarios'][scenario]['conditions']) + '</td>\n')
+					testDetails = ''
+					for x,y in data['scenarios'][scenario]['conditions'].items():
+						testDetails += str(x) + ': ' + str(y) + '\n'
+						#details += '\n'
+					self.file.write('     <td><pre>' + testDetails + '</pre></td>\n')
 					self.file.write('    </tr>\n')
-					#testDetails = '<pre style="background-color:white">\n'
 		else:
 			print ('no details???')
 		self.file.write('  </table>\n')

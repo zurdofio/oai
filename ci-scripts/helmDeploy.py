@@ -72,9 +72,9 @@ class ClusterDeploy:
 			if imageName == 'mysql':
 				continue
 			# Check if image is exist on the Red Hat server, before pushing it to OC cluster
-			subprocess.run(f'echo "IMAGENAME_TAG: {imageName}:{imageTag} > archives/{imageName}_image_info.log', shell=True)
+			subprocess.run(f'echo "IMAGENAME_TAG: {imageName}:{imageTag}" > archives/{imageName}_image_info.log', shell=True)
 			res = subprocess.check_output("sudo podman image inspect --format='Size = {{.Size}} bytes' " + f'{imageName}:{imageTag} | tee -a archives/{imageName}_image_info.log', shell=True, universal_newlines=True)
-			subprocess.run(f"sudo podman image inspect --format='Date = {{.Created}}' " + f'{imageName}:{imageTag} | tee -a archives/{imageName}_image_info.log', shell=True)
+			subprocess.run("sudo podman image inspect --format='Date = {{.Created}}' " + f'{imageName}:{imageTag} >> archives/{imageName}_image_info.log', shell=True)
 			res2 = re.search('no such image', str(res.strip()))
 			if res2 is not None:
 				logging.error(f'\u001B[1m No such image {imageName}]\u001B[0m')
@@ -167,14 +167,14 @@ class ClusterDeploy:
 			res = subprocess.check_output(f'helm install {imageName} ./charts/{imageName}/ | tee -a archives/5gcn_helm_summary.txt 2>&1', shell=True, universal_newlines=True)
 			res2 = re.search('STATUS: deployed', str(res.strip()))
 			if res2 is None:
-				subprocess.run(f'echo "{imageName}: HELM KO" > archives/5gcn_helm_summary.txt', shell=True)
+				subprocess.run(f'echo "{imageName}: HELM KO" >> archives/5gcn_helm_summary.txt 2>&1', shell=True)
 				logging.error(f'\u001B[1m Deploying "{imageName}" Failed using helm chart on OC Cluster\u001B[0m')
 				logging.error(f'\u001B[1m 	5GCN Deployment: KO \u001B[0m')
 				subprocess.run(f'echo "DEPLOYMENT: KO" > archives/deployment_status.log', shell=True)
 				self.UnDeploy_5gcn()
 				sys.exit(-1)
 			else:
-				subprocess.run(f'echo "{imageName}: HELM OK" > archives/5gcn_helm_summary.txt', shell=True)
+				subprocess.run(f'echo "{imageName}: HELM OK" >> archives/5gcn_helm_summary.txt 2>&1', shell=True)
 				logging.debug(f'\u001B[1m   Deployed "{imageName}" Successfully using helm chart\u001B[0m')
 			time.sleep(20)
 			res = subprocess.check_output(f'oc get pods -o wide -l app.kubernetes.io/instance={imageName} | tee -a archives/5gcn_pods_summary.txt', shell=True, universal_newlines=True)
@@ -192,11 +192,13 @@ class ClusterDeploy:
 				res3 = re.search(f'mysqld is alive', str(res.strip()))
 				if res2 is not None or res3 is not None:
 					logging.debug(f'\u001B[1m POD "{imageName}" Service Running Sucessfully\u001B[0m')
+					subprocess.run(f'echo "{imageName}: POD OK" >> archives/5gcn_pods_summary.txt 2>&1', shell=True)
 					isRunning = True
 					passPods += 1
 				count +=1	
 			if isRunning == False:
 				logging.error(f'\u001B[1m POD "{imageName}" Service Running FAILED \u001B[0m')
+				subprocess.run(f'echo "{imageName}: POD KO" >> archives/5gcn_pods_summary.txt 2>&1', shell=True)
 				#self.UnDeploy_5gcn()
 				#sys.exit(-1)
 
