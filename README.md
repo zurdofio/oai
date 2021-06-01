@@ -9,25 +9,24 @@
     <a href="https://jenkins-oai.eurecom.fr/job/OAI-CN5G-SMF/"><img src="https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins-oai.eurecom.fr%2Fjob%2FOAI-CN5G-SMF%2F&label=build%20SMF"></a>
 </p>
 
-------------------------------------------------------------------------------
+<h2 align="center">
+ OPENAIR-CN-5G: An implementation of the 5G Core network by the OpenAirInterface community.
+</h2>
 
-                             OPENAIR-CN-5G
- An implementation of the 5G Core network by the OpenAirInterface community.
-
-------------------------------------------------------------------------------
-
-OPENAIR-CN-5G is an implementation of the 3GPP specifications for the 5G Core Network.
+`OPENAIR-CN-5G` is an implementation of the 3GPP specifications for the 5G Core Network.
 At the moment, it contains the following network elements:
 
-* Access and Mobility Management Function (**AMF**)
+* Access and Mobility Management Function (**[AMF](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-amf)**)
 * Authentication Server Management Function (**AUSF**)
-* Network Repository Function (**NRF**)
-* Session Management Function (**SMF**)
+* Network Repository Function (**[NRF](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-nrf)**)
+* Session Management Function (**[SMF](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-smf)**)
 * Unified Data Management (**UDM**)
 * Unified Data Repository (**UDR**)
-* User Plane Function (**UPF**)
+* User Plane Function (**UPF**) with 2 variants:
+  * Simple Implementation based on our 4G CUPS component (**[SPGWU-TINY](https://github.com/OPENAIRINTERFACE/openair-spgwu-tiny)**)
+  * VPP-Based Implementation (**UPF-VPP**)
 
-Each has its own repository. Some of these repositories are still private.
+Each has its own repository. Some of these repositories are still private, soon to be released.
 
 This repository is a **Federation of the OpenAir CN 5G repositories**.
 

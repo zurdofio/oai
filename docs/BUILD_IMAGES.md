@@ -16,10 +16,10 @@
 
 | CNF Name    | Branch Name             | Commit at time of writing                  | Ubuntu 18.04 | RHEL8 (UBI8)    |
 | ----------- |:----------------------- | ------------------------------------------ | ------------ | ----------------|
-| AMF         | `develop`               | `1a9f65c6a1e1846b13b82ad337a965596565fdfe` | X            | X               |
-| SMF         | `develop`               | `11d6375c4ac408805f294172cc789cd196a75dc6` | X            | X               |
-| NRF         | `develop`               | `a221f39c9d9729d0652042aee918c81b23d95de6` | X            | X               |
-| SPGW-U-TINY | `gtp_extension_header`  | `3898c773f91bb21451d8a9d4ef8e3d06ab184e1d` | X            | -               |
+| AMF         | `develop`               | `9656dbb151847d7979436753b1c6a407fedf63fd` | X            | X               |
+| SMF         | `develop`               | `401bf13b096b4f3d4bc865b30440d95484558cf4` | X            | X               |
+| NRF         | `develop`               | `4982e0da034663e30d7682957c7b8b39c978bca1` | X            | X               |
+| SPGW-U-TINY | `gtp_extension_header`  | `3898c773f91bb21451d8a9d4ef8e3d06ab184e1d` | X            | X               |
 
 ```bash
 $ git clone https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed.git
@@ -80,7 +80,7 @@ Here in our network configuration, we need to pass the "GIT PROXY" configuration
 
 ```bash
 $ docker build --target oai-amf --tag oai-amf:develop \
-               --file component/oai-amf/docker/Dockerfile.ubuntu.18.04 \
+               --file component/oai-amf/docker/Dockerfile.amf.ubuntu18 \
                --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
                component/oai-amf
 $ docker image prune --force
@@ -95,13 +95,13 @@ RHEL base images generally needs a subscription to access the package repository
 
 ```bash
 $ sudo podman build --target oai-amf --tag oai-amf:develop \
-               --file component/oai-amf/docker/Dockerfile.amf.rhel8.2 \
+               --file component/oai-amf/docker/Dockerfile.amf.rhel8 \
                --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
                component/oai-amf
 ...
 ```
 
-The above command is with podman, incase of docker it can be changed with its docker equivalent. 
+The above command is with podman, in case of docker it can be changed with its docker equivalent.
 
 
 # 4. Build SMF Image #
@@ -110,7 +110,7 @@ The above command is with podman, incase of docker it can be changed with its do
 
 ```bash
 $ docker build --target oai-smf --tag oai-smf:develop \
-               --file component/oai-smf/docker/Dockerfile.ubuntu18.04 \
+               --file component/oai-smf/docker/Dockerfile.smf.ubuntu18 \
                --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
                component/oai-smf
 $ docker image prune --force
@@ -125,15 +125,13 @@ RHEL base images generally needs a subscription to access the package repository
 
 ```bash
 $ sudo podman build --target oai-smf --tag oai-smf:develop \
-               --file component/oai-smf/docker/Dockerfile.smf.rhel8.2 \
+               --file component/oai-smf/docker/Dockerfile.smf.rhel8 \
                --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
                component/oai-smf
 ...
 ```
 
-The above command is with podman, incase of docker it can be changed with its docker equivalent. 
-
-
+The above command is with podman, in case of docker it can be changed with its docker equivalent.
 
 # 5. Build NRF Image #
 
@@ -141,8 +139,8 @@ The above command is with podman, incase of docker it can be changed with its do
 
 ```bash
 $ docker build --target oai-nrf --tag oai-nrf:develop \
-               --file component/oai-nrf/docker/Dockerfile.ubuntu.18.04 \
-               --build-arg EURECOM_PROXY="http://proxy.eurecom.fr:8080" component/oai-nrf
+               --file component/oai-nrf/docker/Dockerfile.nrf.ubuntu18 \
+               --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" component/oai-nrf
 $ docker image prune --force
 $ docker image ls
 oai-nrf                 develop             04334b29e103        1 minute ago          280MB
@@ -155,15 +153,13 @@ RHEL base images generally needs a subscription to access the package repository
 
 ```bash
 $ sudo podman build --target oai-nrf --tag oai-nrf:develop \
-               --file component/oai-nrf/docker/Dockerfile.nrf.rhel8.2 \
+               --file component/oai-nrf/docker/Dockerfile.nrf.rhel8 \
                --build-arg NEEDED_GIT_PROXY="http://proxy.eurecom.fr:8080" \
                component/oai-nrf
 ...
 ```
 
-The above command is with podman, incase of docker it can be changed with its docker equivalent. 
-
-
+The above command is with podman, in case of docker it can be changed with its docker equivalent.
 
 # 6. Build SPGW-U Image #
 
@@ -191,6 +187,6 @@ $ sudo podman build --target oai-spgwu-tiny --tag oai-spgwu-tiny:develop \
 ...
 ```
 
-The above command is with podman, incase of docker it can be changed with its docker equivalent. 
+The above command is with podman, in case of docker it can be changed with its docker equivalent.
 
 You are ready to [Configure the Containers](./CONFIGURE_CONTAINERS.md) or deploying the images using [helm-charts] (./DEPLOY_SA5G_HC.md)
