@@ -41,9 +41,7 @@ services:
             cicd_public_net:
                 ipv4_address: 192.168.61.195
         volumes:
-            - ./nrf-entrypoint-sleep.sh:/openair-nrf/bin/nrf-entrypoint-sleep.sh
             - ./nrf-healthy-check.sh:/openair-nrf/bin/nrf-healthy-check.sh
-        entrypoint: /bin/bash -c "/openair-nrf/bin/nrf-entrypoint-sleep.sh"
         healthcheck:
             test: /bin/bash -c "/openair-nrf/bin/nrf-healthy-check.sh"
             interval: 10s
@@ -108,9 +106,7 @@ services:
             cicd_public_net:
                 ipv4_address: 192.168.61.196
         volumes:
-            - ./amf-entrypoint-sleep.sh:/openair-amf/bin/amf-entrypoint-sleep.sh
             - ./amf-healthy-check.sh:/openair-amf/bin/amf-healthy-check.sh
-        entrypoint: /bin/bash -c "/openair-amf/bin/amf-entrypoint-sleep.sh"
         healthcheck:
             test: /bin/bash -c "/openair-amf/bin/amf-healthy-check.sh"
             interval: 10s
@@ -153,9 +149,7 @@ services:
             cicd_public_net:
                 ipv4_address: 192.168.61.197
         volumes:
-            - ./smf-entrypoint-sleep.sh:/oai-cn5g-smf/bin/smf-entrypoint-sleep.sh
             - ./smf-healthy-check.sh:/oai-cn5g-smf/bin/smf-healthy-check.sh
-        entrypoint: /bin/bash -c "/oai-cn5g-smf/bin/smf-entrypoint-sleep.sh"
         healthcheck:
             test: /bin/bash -c "/oai-cn5g-smf/bin/smf-healthy-check.sh"
             interval: 10s
@@ -207,9 +201,7 @@ services:
             cicd_public_net:
                 ipv4_address: 192.168.61.198
         volumes:
-            - ./upf-entrypoint-sleep.sh:/openair-spgwu-tiny/bin/upf-entrypoint-sleep.sh
             - ./upf-healthy-check.sh:/openair-spgwu-tiny/bin/upf-healthy-check.sh
-        entrypoint: /bin/bash -c "/openair-spgwu-tiny/bin/upf-entrypoint-sleep.sh"
         healthcheck:
             test: /bin/bash -c "/openair-spgwu-tiny/bin/upf-healthy-check.sh"
             interval: 10s
