@@ -30,7 +30,7 @@ spec:
         command:
           - /bin/sh
           - -c
-          - /usr/sbin/tcpdump -i net1 -w /pcap/oai-smf_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+          - /usr/sbin/tcpdump -i any -w /pcap/oai-smf_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         volumeMounts:
         - mountPath: "/pcap"
           name: cn5g-pv
