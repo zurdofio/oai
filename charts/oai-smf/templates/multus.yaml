@@ -14,7 +14,7 @@ spec:
         "addresses": [
                 {
                         "address": {{- cat .Values.multus.n4IPadd "/" .Values.multus.n4Netmask | nospace | quote }},
-                        "gateway": {{- cat .Values.config.n4Gw | nospace | quote }}
+                        "gateway": {{- cat .Values.multus.n4Gw | nospace | quote }}
                 }
         ]
       }
