@@ -13,6 +13,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
+WHITE='\033[0;97m'
 STATUS=0 #STATUS 0 exit safe STATUS 1 exit with an error
 
 if [[ $1 == 'start' ]]; then
@@ -23,6 +24,12 @@ if [[ $1 == 'start' ]]; then
 	elif [[ $2 == 'gnbsim' ]]; then
 		echo -e "${BLUE}Starting gnbsim ${NC}..."
 		docker-compose -f docker-compose-gnbsim.yaml up -d gnbsim$3
+	elif [[ $2 == 'gnbsim-vpp' ]]; then
+		echo -e "${BLUE}Starting gnbsim ${NC}..."
+		docker-compose -f docker-compose-gnbsim.yaml up -d gnbsim-vpp
+	elif [[ $2 == 'vpp-upf' ]]; then
+		echo -e "${BLUE}Starting 5gcn with vpp-upf ${NC}..."
+		docker-compose -f docker-compose-vpp-upf.yaml up -d
 	else
 		echo -e "${BLUE}Starting 5gcn components in the order mysql, amf, smf, spgwu${NC}..."
 		docker-compose -f docker-compose-no-nrf.yaml -p 5gcn up -d
@@ -34,6 +41,8 @@ if [[ $1 == 'start' ]]; then
 			nrf_health=$(docker inspect --format='{{json .State.Health.Status}}' oai-nrf)
                 elif [[ $2 == 'gnbsim' ]]; then
                         gnbsim_health=$(docker inspect --format='{{json .State.Health.Status}}' gnbsim)
+						    elif [[ $2 == 'vpp-upf' ]]; then
+                                    vpp_upf_health=$(docker inspect --format='{{json .State.Health.Status}}' vpp-upf)
 		fi
 		amf_health=$(docker inspect --format='{{json .State.Health.Status}}' oai-amf)
 		smf_health=$(docker inspect --format='{{json .State.Health.Status}}' oai-smf)
@@ -54,7 +63,7 @@ if [[ $1 == 'start' ]]; then
 			STATUS=0
 			break
 		elif [[ $2 != 'nrf' ]]; then
-                        echo -ne "here mysql : $mysql_health, oai-amf : $amf_health, oai-smf : $smf_health, oai-spgwu : $spgwu_health\033[0K\r"
+                        echo -ne "mysql : $mysql_health, oai-amf : $amf_health, oai-smf : $smf_health, oai-spgwu : $spgwu_health\033[0K\r"
 			STATUS=1
 			sleep 2
 		else
@@ -103,10 +112,16 @@ elif [[ $1 == 'stop' ]]; then
 		docker-compose -f docker-compose.yaml -p 5gcn down
 	elif [[ $2 == 'gnbsim' ]]; then
 		docker-compose -f docker-compose-gnbsim.yaml down
+	elif [[ $2 == 'vpp-upf' ]]; then
+		docker-compose -f docker-compose-vpp-upf.yaml down
 	else         
 		docker-compose -f docker-compose-no-nrf.yaml -p 5gcn down
 	fi
 	echo -e "${GREEN}Service $2 is  stopped${NC}"
 else
-	echo -e "Only use the following options\n\n${RED}start${NC}: start the 5gCN\n${RED}stop${NC}: stops the 5gCN\n${RED}nrf${NC}: nrf should be used\n${RED}no-nrf${NC}: nrf should not be used\nExample: ./core-network.sh start nrf"
+	echo -e "Only use the following options\n\n${RED}start ${WHITE}[option]${NC}: start the 5gCN/gnbsim\n"\
+"${RED}stop  ${WHITE}[option]${NC}: stops the 5gCN/gnbsim\n${WHITE}--option\n${RED}  nrf${NC}        : nrf should be used\n"\
+"${RED}  no-nrf${NC}     : nrf should not be used\n${RED}  vpp-upf${NC}    : vpp-upf should be used (without nrf)\n"\
+"${RED}  gnbsim${NC}     : gnbsim should be used\n${RED}  gnbsim-vpp${NC} : gnbsim should be used for vpp-upf\n"\
+"\nExample: ./core-network.sh start nrf\n"
 fi
