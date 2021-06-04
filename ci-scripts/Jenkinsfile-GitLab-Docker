@@ -292,7 +292,7 @@ pipeline {
         success {
           script {
             sh 'echo "DEPLOYMENT: OK" > archives/deployment_status.log'
-            sh 'python3 ./ci-scripts/routecheck.py --mode=Add --userName=' + dsT_host_user + ' --hostName=' + dsT_host
+            sh 'python3 ./ci-scripts/routeCheck.py --mode=Add --userName=' + dsT_host_user + ' --hostName=' + dsT_host
           }
         }
         unsuccessful {
@@ -335,7 +335,7 @@ pipeline {
       steps {
         script {
           echo '\u2705 \u001B[32mUn-Deploy CN5G\u001B[0m'
-          sh 'python3 ./ci-scripts/routecheck.py --mode=Delete --userName=' + dsT_host_user + ' --hostName=' + dsT_host
+          sh 'python3 ./ci-scripts/routeCheck.py --mode=Delete --userName=' + dsT_host_user + ' --hostName=' + dsT_host
           dir('ci-scripts/dsTesterDockerCompose') {
             sh 'docker-compose down > ../../archives/compose_normal_down.log 2>&1'
           }
@@ -347,7 +347,7 @@ pipeline {
     always {
       script { 
         // Remove any leftover containers/networks
-        sh 'python3 ./ci-scripts/routecheck.py --mode=Delete --userName=' + dsT_host_user + ' --hostName=' + dsT_host
+        sh 'python3 ./ci-scripts/routeCheck.py --mode=Delete --userName=' + dsT_host_user + ' --hostName=' + dsT_host
         dir('ci-scripts/dsTesterDockerCompose') {
           sh 'docker-compose down > ../../archives/compose_l_down.log 2>&1'
         }
