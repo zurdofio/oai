@@ -38,9 +38,6 @@ def cn_ci_host = params.Host_CN_CI_Server
 def cn_ci_resource = params.DockerContainers
 def ds_tester_ci_resource = params.DsTester
 
-// Location of the DsTester workspace
-def dsTestFrameworkLocation = params.dsTestFrameworkLocation
-
 // When triggered by upstream, specify which tag to use
 def upstreamTagToUse = params.upstreamTagToUse
 
@@ -238,16 +235,10 @@ pipeline {
     stage ('Deploy Whole 5G Core Network') {
       steps {
         script {
-          echo '\u2705 \u001B[32mDeploy CN5G in idle mode\u001B[0m'
+          echo '\u2705 \u001B[32mDeploy CN5G using Docker-Compose\u001B[0m'
           // Prepare all needed files for docker-compose
           // First put all correct tags to test
           sh 'sed -e "s#NRF_IMAGE_TAG#' + nrfTag + '#" -e "s#AMF_IMAGE_TAG#' + amfTag + '#" -e "s#SMF_IMAGE_TAG#' + smfTag + '#" -e "s#SPGWU_IMAGE_TAG#' + spgwuTag + '#" ci-scripts/dsTesterDockerCompose/docker-compose.tplt > ci-scripts/dsTesterDockerCompose/docker-compose.yml'
-          // Entrypoints are modified to be inactive for dsTester framework
-          sh 'sed -e "s@exec.*@sleep infinity@" component/oai-nrf/scripts/entrypoint.sh > ci-scripts/dsTesterDockerCompose/nrf-entrypoint-sleep.sh'
-          sh 'sed -e "s@exec.*@sleep infinity@" component/oai-amf/scripts/entrypoint.sh > ci-scripts/dsTesterDockerCompose/amf-entrypoint-sleep.sh'
-          sh 'sed -e "s@exec.*@sleep infinity@" component/oai-smf/scripts/entrypoint.sh > ci-scripts/dsTesterDockerCompose/smf-entrypoint-sleep.sh'
-          sh 'sed -e "s@exec.*@sleep infinity@" component/oai-upf-equivalent/scripts/entrypoint.sh > ci-scripts/dsTesterDockerCompose/upf-entrypoint-sleep.sh'
-          sh 'chmod 775 ci-scripts/dsTesterDockerCompose/*entrypoint-sleep.sh'
           dir('ci-scripts/dsTesterDockerCompose') {
             sh 'docker-compose up -d  > ../../archives/compose_5gcn_up.log 2>&1'
             sh 'sleep 100'
@@ -273,25 +264,25 @@ pipeline {
             }
             // Do docker logs to recover the configuration results
             try {
-              sh 'docker logs cicd-oai-nrf > archives/nrf_config.log 2>&1'
+              //sh 'docker logs cicd-oai-nrf > archives/nrf_config.log 2>&1'
               sh 'docker inspect --format=\'STATUS: {{.State.Health.Status}}\' cicd-oai-nrf >> archives/nrf_config.log'
             } catch (Exception e) {
               sh 'echo "STATUS: KO" >> archives/nrf_config.log'
             }
             try {
-              sh 'docker logs cicd-oai-amf > archives/amf_config.log 2>&1'
+              //sh 'docker logs cicd-oai-amf > archives/amf_config.log 2>&1'
               sh 'docker inspect --format=\'STATUS: {{.State.Health.Status}}\' cicd-oai-amf >> archives/amf_config.log'
             } catch (Exception e) {
               sh 'echo "STATUS: KO" >> archives/amf_config.log'
             }
             try {
-              sh 'docker logs cicd-oai-smf > archives/smf_config.log 2>&1'
+              //sh 'docker logs cicd-oai-smf > archives/smf_config.log 2>&1'
               sh 'docker inspect --format=\'STATUS: {{.State.Health.Status}}\' cicd-oai-smf >> archives/smf_config.log'
             } catch (Exception e) {
               sh 'echo "STATUS: OK" >> archives/smf_config.log'
             }
             try {
-              sh 'docker logs cicd-oai-upf > archives/spgwu_config.log 2>&1'
+              //sh 'docker logs cicd-oai-upf > archives/spgwu_config.log 2>&1'
               sh 'docker inspect --format=\'STATUS: {{.State.Health.Status}}\' cicd-oai-upf >> archives/spgwu_config.log'
             } catch (Exception e) {
               sh 'echo "STATUS: KO" >> archives/spgwu_config.log'
@@ -315,12 +306,27 @@ pipeline {
       steps {
         lock (ds_tester_ci_resource) {
           script {
-            sh 'cd ' + dsTestFrameworkLocation + ' && git clean -x -d -f > /dev/null'
-            sh 'cd ' + dsTestFrameworkLocation + '/scripts && export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:.:/usr/local/devsol/bin && CI_ENV=True SRC_BASE_DIR=' + WORKSPACE + ' ./run-5gc.bash -pt --shark --detach --get-results --5g --pcap-test > ' + WORKSPACE + '/archives/run-5g-dstester.log 2>&1'
-            sh 'cd ' + dsTestFrameworkLocation + ' && git stash > /dev/null'
-            sh 'cd ' + dsTestFrameworkLocation + ' && git stash clear > /dev/null'
-            sh 'cd ' + WORKSPACE + ' && python3 ./ci-scripts/toCheckDSTesterResult.py' 		
-          }
+            echo '\u2705 \u001B[32mTesting with DS Tester\u001B[0m'
+            if (fileExists("dstester")) {
+              sh "rm -Rf dstester > /dev/null 2>&1"
+            }
+            sh "mkdir -p dstester"
+            dir ('dstester') {
+              withCredentials([
+                [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.dsTesterGitLabRepository_Credentials}", usernameVariable: 'git_username', passwordVariable: 'git_token']
+              ]) {
+                sh "git clone https://${git_username}:${git_token}@github.com/OPENAIRINTERFACE/chasseur.git . > ../git_clone.log 2>&1"
+                sh "git checkout develop >> ../git_clone.log 2>&1"
+                try {
+                  sh "python3 jenkins/dogmatix-agent.py -f jenkins/suit-docker-compose.yaml | tee ../DS-TEST-RESULTS/dsTester_Summary.txt"
+                } catch (Exception e) {
+                  currentBuild.result = 'FAILURE'
+                  echo "dsTester Running FAILED"
+                } 
+              }
+            }
+            sh "python3 ./ci-scripts/toCheckDSTesterResult1.py"
+          }  
         }
       }
     }
@@ -343,10 +349,10 @@ pipeline {
           sh 'docker-compose down > ../../archives/compose_l_down.log 2>&1'
         }
         // Generating the HTML report
-        sh 'python3 ./ci-scripts/dsTestGenerateHTMLReport.py --job_name=' + JOB_NAME + ' --job_id=' + BUILD_ID + ' --job_url=' + BUILD_URL
+        sh 'python3 ./ci-scripts/dsTestGenerateHTMLReport2.py --job_name=' + JOB_NAME + ' --job_id=' + BUILD_ID + ' --job_url=' + BUILD_URL
 
         // Zipping all archived log files
-        sh "zip -r -qq cn5g_fed_docker_logs.zip archives DS-TEST-RESULTS/*.tar DS-TEST-RESULTS/status.txt"
+        sh "zip -r -qq cn5g_fed_docker_logs.zip archives DS-TEST-RESULTS"
         if (fileExists('cn5g_fed_docker_logs.zip')) {
           archiveArtifacts artifacts: 'cn5g_fed_docker_logs.zip'
         }
