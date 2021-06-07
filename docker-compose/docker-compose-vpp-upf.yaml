@@ -69,6 +69,7 @@ services:
             - AUSF_API_VERSION=v1
         depends_on:
             - mysql
+            - vpp-upf
         volumes:
             - ./amf-healthcheck.sh:/openair-amf/bin/amf-healthcheck.sh
         healthcheck:
@@ -108,15 +109,15 @@ services:
             - USE_NETWORK_INSTANCE=yes
         extra_hosts:
             - "gw1.vppupf.node.5gcn.mnc95.mcc208.3gppnetwork.org:192.168.71.202"
-#        depends_on:
-#            - oai-amf
-        # volumes:
-        #     - ./smf-healthcheck.sh:/openair-smf/bin/smf-healthcheck.sh
-        # healthcheck:
-        #     test: /bin/bash -c "/openair-smf/bin/smf-healthcheck.sh"
-        #     interval: 10s
-        #     timeout: 5s
-        #     retries: 5
+        depends_on:
+            - oai-amf
+        volumes:
+             - ./smf-healthcheck.sh:/openair-smf/bin/smf-healthcheck.sh
+        healthcheck:
+             test: /bin/bash -c "/openair-smf/bin/smf-healthcheck.sh"
+             interval: 10s
+             timeout: 5s
+             retries: 5
         networks:
             public_net_core:
                 ipv4_address: 192.168.71.133

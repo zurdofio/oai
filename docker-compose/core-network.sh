@@ -29,7 +29,9 @@ if [[ $1 == 'start' ]]; then
 		docker-compose -f docker-compose-gnbsim.yaml up -d gnbsim-vpp
 	elif [[ $2 == 'vpp-upf' ]]; then
 		echo -e "${BLUE}Starting 5gcn with vpp-upf ${NC}..."
-		docker-compose -f docker-compose-vpp-upf.yaml up -d
+		docker-compose -f docker-compose-vpp-upf.yaml up -d oai-amf
+	        sleep 5
+		docker-compose -f docker-compose-vpp-upf.yaml up -d oai-smf
 	else
 		echo -e "${BLUE}Starting 5gcn components in the order mysql, amf, smf, spgwu${NC}..."
 		docker-compose -f docker-compose-no-nrf.yaml -p 5gcn up -d
@@ -41,26 +43,37 @@ if [[ $1 == 'start' ]]; then
 			nrf_health=$(docker inspect --format='{{json .State.Health.Status}}' oai-nrf)
                 elif [[ $2 == 'gnbsim' ]]; then
                         gnbsim_health=$(docker inspect --format='{{json .State.Health.Status}}' gnbsim)
-						    elif [[ $2 == 'vpp-upf' ]]; then
-                                    vpp_upf_health=$(docker inspect --format='{{json .State.Health.Status}}' vpp-upf)
+
 		fi
 		amf_health=$(docker inspect --format='{{json .State.Health.Status}}' oai-amf)
 		smf_health=$(docker inspect --format='{{json .State.Health.Status}}' oai-smf)
-		spgwu_health=$(docker inspect --format='{{json .State.Health.Status}}' oai-spgwu)
+		if [[ $2 == 'vpp-upf' ]];then
+			vpp_upf_health=$(docker inspect --format='{{json .State.Health.Status}}' vpp-upf)
+			sleep 5
+			upf_logs=$(docker logs oai-smf | grep  'handle_receive(16 bytes)')
+	    else
+		    spgwu_health=$(docker inspect --format='{{json .State.Health.Status}}' oai-spgwu)
+			upf_logs=$(docker logs oai-spgwu | grep  'Received SX HEARTBEAT RESPONSE')
+	    fi
 		if [[ ${mysql_health} == '"healthy"' && ${amf_health} == '"healthy"' && ${smf_health} == '"healthy"' && ${spgwu_health} == '"healthy"' && $2 != 'nrf' && $2 != 'gnbsim'	]]; then
 			echo -e "\n${GREEN}All components are healthy${NC}..."
-			STATUS=0
+			STATUS=0 CVZxbag
 			break
                 elif [[ $2 == 'gnbsim' ]]; then
                         echo -ne "gnbsim : $gnbsim_health\033[0K\r"
 			if  [[ ${gnbsim_health} == '"healthy"' ]]; then
-                             STATUS=0
+                        STATUS=0
 			     break
 		        fi     
                         sleep 2
 		elif [[ ${mysql_health} == '"healthy"' && ${amf_health} == '"healthy"' && ${smf_health} == '"healthy"' && ${spgwu_health} == '"healthy"' && ${nrf_health} == '"healthy"' && $2 == 'nrf' ]]; then
 			echo -e "\n${GREEN}All components are healthy${NC}..."
 			STATUS=0
+			break
+		elif [[ $2 == 'vpp-upf' ]]; then
+                        echo -ne "mysql : $mysql_health, oai-amf : $amf_health, oai-smf : $smf_health,vpp-upf : $vpp_upf_health\033[0K\r"
+			STATUS=0
+			sleep 2
 			break
 		elif [[ $2 != 'nrf' ]]; then
                         echo -ne "mysql : $mysql_health, oai-amf : $amf_health, oai-smf : $smf_health, oai-spgwu : $spgwu_health\033[0K\r"
@@ -88,7 +101,14 @@ if [[ $1 == 'start' ]]; then
 		echo -e "${GREEN}#### gnbsim is healthy - gnb & ue is conncted to core network now !! #####${NC}"
 	else
 		echo -e "${BLUE}Checking if SMF is able to connect with UPF${NC}"
-		upf_logs=$(docker logs oai-spgwu | grep  'Received SX HEARTBEAT RESPONSE')
+
+		if [[ $2 == 'vpp-upf' ]];then
+			sleep 5
+			upf_logs=$(docker logs oai-smf | grep  'handle_receive(16 bytes)')
+	    else
+			upf_logs=$(docker logs oai-spgwu | grep  'Received SX HEARTBEAT RESPONSE')
+	    fi
+
 		if [[ -z $upf_logs && $STATUS == 0 ]]; then
 		 	echo -e "\n${RED}UPF not receiving heartbeats from SMF${NC}..."
 		 	STATUS=1
