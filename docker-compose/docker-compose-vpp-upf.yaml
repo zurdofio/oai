@@ -68,8 +68,9 @@ services:
             - AUSF_PORT=80
             - AUSF_API_VERSION=v1
         depends_on:
-            - mysql
             - vpp-upf
+            - oai-ext-dn
+            - mysql
         volumes:
             - ./amf-healthcheck.sh:/openair-amf/bin/amf-healthcheck.sh
         healthcheck:
