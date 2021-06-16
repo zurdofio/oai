@@ -31,8 +31,7 @@ services:
             - 9090
         command: >
             bash -c "nohup tshark -i eth0 -w /tmp/nrf.pcap 2>&1 > /dev/null &
-            nohup /openair-nrf/bin/oai_nrf -c /openair-nrf/etc/nrf.conf -o | tee /tmp/nrf.log 2>&1 &
-            sleep infinity
+            /openair-nrf/bin/oai_nrf -c /openair-nrf/etc/nrf.conf -o | tee /tmp/nrf.log 2>&1
             "
         cap_add:
             - NET_ADMIN
@@ -63,8 +62,7 @@ services:
              - 80
         command: >
             bash -c "nohup tshark -i eth0 -w /tmp/amf.pcap 2>&1 > /dev/null &
-            nohup /openair-amf/bin/oai_amf -c /openair-amf/etc/amf.conf -o | tee /tmp/amf.log 2>&1 &
-            sleep infinity
+            /openair-amf/bin/oai_amf -c /openair-amf/etc/amf.conf -o | tee /tmp/amf.log 2>&1
             "
         cap_add:
             - NET_ADMIN
@@ -135,8 +133,7 @@ services:
             - 9090
         command: >
             bash -c "nohup tshark -i eth0 -w /tmp/smf.pcap 2>&1 > /dev/null &
-            nohup /openair-smf/bin/oai_smf -c /openair-smf/etc/smf.conf -o | tee /tmp/smf.log 2>&1 &
-            sleep infinity
+            /openair-smf/bin/oai_smf -c /openair-smf/etc/smf.conf -o | tee /tmp/smf.log 2>&1
             "
         cap_add:
             - NET_ADMIN
@@ -185,8 +182,7 @@ services:
             - 8805
         command: >
             bash -c "nohup tshark -i eth0 -w /tmp/spgwu.pcap 2>&1 > /dev/null &
-            nohup /openair-spgwu-tiny/bin/oai_spgwu -c /openair-spgwu-tiny/etc/spgw_u.conf -o | tee /tmp/spgwu.log 2>&1 &
-            sleep infinity
+            /openair-spgwu-tiny/bin/oai_spgwu -c /openair-spgwu-tiny/etc/spgw_u.conf -o | tee /tmp/spgwu.log 2>&1
             "
         environment:
             - TZ=Europe/Paris
