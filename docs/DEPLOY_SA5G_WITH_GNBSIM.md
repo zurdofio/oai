@@ -294,7 +294,7 @@ Last thing is to remove all services - <br/>
 
 * Undeploy the gnbsim
 ```bash
-/oai-cn5g-fed/docker-compose$ ./core-network.sh stop gnbsim
+/oai-cn5g-fed/docker-compose$ docker-compose -f docker-compose-gnbsim.yaml down
 Stopping service gnbsim ...
 Stopping gnbsim ... done
 Removing gnbsim ... done
@@ -304,7 +304,7 @@ Service gnbsim is  stopped
 
 * Undeploy the core network
 ```bash
-/oai-cn5g-fed/docker-compose$ ./core-network.sh stop nrf
+/oai-cn5g-fed/docker-compose$ ./core-network.sh stop nrf spgwu
 Stopping service nrf ...
 Stopping oai-amf    ... done
 Stopping oai-ext-dn ... done
