@@ -330,6 +330,26 @@ pipeline {
           }  
         }
       }
+      post {
+        always {
+          script {
+            // Copy the pcaps and logs from the containers
+            sh "mkdir -p archives/pcaps archives/logs"
+            try {
+              sh 'docker cp cicd-oai-nrf:/tmp/nrf.pcap archives/pcaps/oai_nrf.pcap'
+              sh 'docker cp cicd-oai-nrf:/tmp/nrf.log archives/logs/oai_nrf.log'
+              sh 'docker cp cicd-oai-amf:/tmp/amf.pcap archives/pcaps/oai_amf.pcap'
+              sh 'docker cp cicd-oai-amf:/tmp/amf.log archives/logs/oai_amf.log'
+              sh 'docker cp cicd-oai-smf:/tmp/smf.pcap archives/pcaps/oai_smf.pcap'
+              sh 'docker cp cicd-oai-smf:/tmp/smf.log archives/logs/oai_smf.log'
+              sh 'docker cp cicd-oai-upf:/tmp/spgwu.pcap archives/pcaps/oai_spgwu.pcap'
+              sh 'docker cp cicd-oai-upf:/tmp/spgwu.log archives/logs/oai_spgwu.log'
+            } catch (Exception e) {
+              sh 'echo "Error in copying pcaps & logs from the containers"'
+            }
+          }
+        }
+      }
     }
     stage ('Undeploy 5G-CN') {
       steps {
