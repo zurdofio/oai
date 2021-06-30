@@ -48,6 +48,28 @@ Let's begin !!
 we did for dsTest-host.
 * Before we procced further for end to end SA5G test, make sure you have healthy docker services for OAI cn5g -
 ```bash
+oai-cn5g-fed/docker-compose$ ./core-network.sh start nrf spgwu
+Starting 5gcn components in the order nrf, mysql, amf, smf, spgwu...
+Creating mysql   ... done
+Creating oai-nrf ... done
+Creating oai-amf   ... done
+Creating oai-spgwu ... done
+Creating oai-smf   ... done
+Creating oai-ext-dn ... done
+Core network started, checking the health status of the containers...
+oai-nrf : "healthy", mysql : "starting", oai-amf : "healthy", oai-smf : "healthy", oai-spgwu : "healthy"
+All components are healthy...
+Checking the if the containers are configured...
+
+Checking if SMF and UPF registered with nrf core network
+
+For example: oai-smf Registration with oai-nrf can be checked on this url /nnrf-nfm/v1/nf-instances?nf-type='SMF' {"_links":{"item":[{"href":"192.168.70.133"}],"self":""}}
+SMF and UPF are registered to NRF...
+
+Core network is configured and healthy, total time taken 43187 milli seconds
+oai-cn5g-fed/docker-compose$
+```
+```bah
 oai-cn5g-fed/docker-compose$ docker ps -a
 CONTAINER ID   IMAGE                           COMMAND                  CREATED          STATUS                    PORTS                          NAMES
 c25db05aa023   ubuntu:bionic                   "/bin/bash -c ' apt …"   23 seconds ago   Up 22 seconds                                            oai-ext-dn
@@ -71,7 +93,7 @@ $ docker build --tag gnbsim:develop --target gnbsim --file docker/Dockerfile.ubu
 * The configuration parameters, are preconfigured in [docker-compose.yaml](../docker-compose/docker-compose.yaml) and [docker-compose-gnbsim.yaml](../docker-compose/docker-compose-gnbsim.yaml) and one can modify it for test.
 * Launch gnbsim docker service
 ```bash
-oai-cn5g-fed/docker-compose$ ./core-network.sh start gnbsim
+oai-cn5g-fed/docker-compose$ docker-compose -f docker-compose-gnbsim.yaml up -d gnbsim
 
 Creating gnbsim ... done
 ```
@@ -184,7 +206,7 @@ iperf Done.
 
 Here we try some scaling test with gnbsim. There are additional IMSIs are added into database (208950000000031-208950000000040). Now we create few more gnbsim instances (4 more for now). We use same script to generate additional instance as follow -
 ```bash
-oai-cn5g-fed/docker-compose$ ./core-network.sh start gnbsim 2
+oai-cn5g-fed/docker-compose$ docker-compose -f docker-compose-gnbsim.yaml up -d gnbsim2
 Creating gnbsim2 ... done
 ```
 So here basically, minimum configuration parameters that need to change is gnbid, imsi and container ip address in docker-compose-gnbsim.yaml.
@@ -272,7 +294,7 @@ Last thing is to remove all services - <br/>
 
 * Undeploy the gnbsim
 ```bash
-/oai-cn5g-fed/docker-compose$ ./core-network.sh stop gnbsim
+/oai-cn5g-fed/docker-compose$ docker-compose -f docker-compose-gnbsim.yaml down
 Stopping service gnbsim ...
 Stopping gnbsim ... done
 Removing gnbsim ... done
@@ -282,7 +304,7 @@ Service gnbsim is  stopped
 
 * Undeploy the core network
 ```bash
-/oai-cn5g-fed/docker-compose$ ./core-network.sh stop nrf
+/oai-cn5g-fed/docker-compose$ ./core-network.sh stop nrf spgwu
 Stopping service nrf ...
 Stopping oai-amf    ... done
 Stopping oai-ext-dn ... done

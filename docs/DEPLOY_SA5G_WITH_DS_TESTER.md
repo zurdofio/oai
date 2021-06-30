@@ -198,13 +198,24 @@ To know how to configure the machine with the above requirements vist [pre-requi
     (docker-compose-host)$ pwd
     /home/<docker-compose-host>/oai/oai-cn-fed/docker-compose
     (docker-compose-host)$ ./core-network
+
     Only use the following options
 
-    start: start the 5gCN
-    stop: stops the 5gCN
+    start [option1] [option2]: start the 5gCN
+    stop [option1] [option2]: stops the 5gCN
+
+    --option1
     nrf: nrf should be used
     no-nrf: nrf should not be used
-    Example: ./core-network.sh start nrf
+
+    --option2
+    vpp-upf: vpp-upf should be used (only works without nrf, no-nrf option1)
+    spgwu : spgwu should be used as upf (works with or without nrf, nrf or no-nrf option1)
+
+    Example 1 : ./core-network.sh start nrf spgwu
+    Example 2: ./core-network.sh start no-nrf vpp-upf
+    Example 1 : ./core-network.sh stop nrf spgwu
+    Example 2: ./core-network.sh stop no-nrf vpp-upf
     ```
 - Before executing the script it is better to start capturing packets to see the message flow between smf <--> nrf <--> upf. The packets will be captured on **demo-oai** bridge which should be configured on the `docker-compose-host` machine. 
 
@@ -214,7 +225,7 @@ To know how to configure the machine with the above requirements vist [pre-requi
 - Starting the core network components, 
 
     ```bash
-    (docker-compose-host)$ ./core-network start nrf
+    (docker-compose-host)$ ./core-network start nrf spgwu
     Starting 5gcn components in the order nrf, mysql, amf, smf, spgwu...
     Creating mysql   ... done
     Creating oai-nrf ... done
