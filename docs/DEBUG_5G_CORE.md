@@ -282,5 +282,5 @@ To report an issue regarding any-component of CN5G or attach-detach procedure fo
 
 1. Share the testing scenario, what the test is trying to achieve
 2. Debug logs of the 5GCN components and packet capture/tcpdump of the 5GCN components. Depending on where the packets are captured take care of interface on which the packets are captured. Also it will be nice to capture packets using a filter `ngap || http || pfcp || gtp`
-
-
+3. If you have an issue with testing then you can send an email at openair5g-cn@lists.eurecom.fr with the configuration files, log files in debug mode and pcaps with appropriate filters. 
+4. In case you want to report a bug in the code of any network function then you can do it directly via gitlab.
