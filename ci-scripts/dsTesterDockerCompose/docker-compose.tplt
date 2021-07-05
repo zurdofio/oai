@@ -91,10 +91,12 @@ services:
             - AMF_INTERFACE_NAME_FOR_NGAP=eth0
             - AMF_INTERFACE_NAME_FOR_N11=eth0
             - SMF_INSTANCE_ID_0=1
+            - SMF_FQDN_0=cicd_oai_smf
             - SMF_IPV4_ADDR_0=192.168.61.197
             - SMF_HTTP_VERSION_0=v1
             - SELECTED_0=true
             - SMF_INSTANCE_ID_1=2
+            - SMF_FQDN_1=cicd_oai_smf
             - SMF_IPV4_ADDR_1=192.168.61.197
             - SMF_HTTP_VERSION_1=v1
             - SELECTED_1=false
@@ -107,7 +109,9 @@ services:
             - NRF_PORT=80
             - NF_REGISTRATION=yes
             - SMF_SELECTION=yes
+            - USE_FQDN_DNS=yes
             - NRF_API_VERSION=v1
+            - NRF_FQDN=cicd_oai_nrf
             - AUSF_IPV4_ADDRESS=192.168.61.210
             - AUSF_PORT=80
             - AUSF_API_VERSION=v1
