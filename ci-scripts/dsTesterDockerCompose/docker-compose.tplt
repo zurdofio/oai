@@ -100,7 +100,7 @@ services:
             - SMF_IPV4_ADDR_1=192.168.61.197
             - SMF_HTTP_VERSION_1=v1
             - SELECTED_1=false
-            - MYSQL_SERVER=cicd-mysql-svr
+            - MYSQL_SERVER=cicd_mysql
             - MYSQL_USER=root
             - MYSQL_PASS=linux
             - MYSQL_DB=oai_db
