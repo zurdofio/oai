@@ -55,6 +55,7 @@ def dsT_host_ip_addr = ""
 // Flags
 def scmEvent = false
 def upstreamEvent = false
+def deployed = true
 
 // Default tags / branches  --> could be passed on by upstream job or by PR content
 def nrfTag = params.nrfTag
@@ -298,6 +299,7 @@ pipeline {
         unsuccessful {
           script {
             sh 'echo "DEPLOYMENT: KO" > archives/deployment_status.log'
+            deployed = false
           }
         }
       }
@@ -365,7 +367,14 @@ pipeline {
   }
   post {
     always {
-      script { 
+      script {
+        // Get logs if deployment fail
+        if (deployed != true) {
+        sh 'docker logs cicd-oai-nrf > archives/logs/oai_nrf.log'
+        sh 'docker logs cicd-oai-amf > archives/logs/oai_amf.log'
+        sh 'docker logs cicd-oai-smf > archives/logs/oai_smf.log'
+        sh 'docker logs cicd-oai-upf > archives/logs/oai_spgwu.log'
+        } 
         // Remove any leftover containers/networks
         sh 'python3 ./ci-scripts/routeCheck.py --mode=Delete --userName=' + dsT_host_user + ' --hostName=' + dsT_host
         dir('ci-scripts/dsTesterDockerCompose') {
