@@ -370,6 +370,7 @@ pipeline {
       script {
         // Get logs if deployment fail
         if (deployed != true) {
+        sh "mkdir -p archives/logs"
         sh 'docker logs cicd-oai-nrf > archives/logs/oai_nrf.log'
         sh 'docker logs cicd-oai-amf > archives/logs/oai_amf.log'
         sh 'docker logs cicd-oai-smf > archives/logs/oai_smf.log'
