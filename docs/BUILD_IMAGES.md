@@ -14,18 +14,34 @@
 
 # 1.  Retrieve the correct network function branches #
 
-| CNF Name    | Branch Name             | Commit at time of writing                  | Ubuntu 18.04 | RHEL8 (UBI8)    |
-| ----------- |:----------------------- | ------------------------------------------ | ------------ | ----------------|
-| AMF         | `develop`               | `9656dbb151847d7979436753b1c6a407fedf63fd` | X            | X               |
-| SMF         | `develop`               | `401bf13b096b4f3d4bc865b30440d95484558cf4` | X            | X               |
-| NRF         | `develop`               | `4982e0da034663e30d7682957c7b8b39c978bca1` | X            | X               |
-| SPGW-U-TINY | `gtp_extension_header`  | `3898c773f91bb21451d8a9d4ef8e3d06ab184e1d` | X            | X               |
+| CNF Name    | Branch Name | Commit at time of writing                  | Ubuntu 18.04 | RHEL8 (UBI8)    |
+| ----------- |:----------- | ------------------------------------------ | ------------ | ----------------|
+| AMF         | `develop`   | `f31dc5a5a013882f4c5f6132d1b2af7f6c98ece2` | X            | X               |
+| SMF         | `develop`   | `7e3ffb6b444269b7667501ee82da9c7b3f7bf9eb` | X            | X               |
+| NRF         | `develop`   | `f722502f92333747503b13491962ade7c5e6dbca` | X            | X               |
+| SPGW-U-TINY | `develop`   | `7f687f853eaa7617ba56da186d0d55afb6219558` | X            | X               |
+
+**UPDATE (2021/07/12): all branches have been tagged with `2021.w28`.**
+
+**PLEASE USE newer commits than these tags.**
 
 ```bash
 $ git clone https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed.git
 $ cd oai-cn5g-fed
+
+# You can specify a tag on the parent GIT repository such as `2021.w28`
+$ git checkout 2021.w28
+# Or you can sync to the latest version
 $ git checkout master
-$ git pull origin master
+
+# Then you need to resync the sub-modules (ie AMF, SPGW-U-TINY, SMF, NRF).
+# You can specify:
+#   ---  a valid tag (such as seen)
+#   ---  a newer tag
+#   ---  a branch to get the latest (`develop` being the latest stable)
+#        Usually the better option is to specify `develop`
+
+
 $ ./scripts/syncComponents.sh -h
 Openair-CN components synchronization
    Original Author: Raphael Defosseux
@@ -57,12 +73,12 @@ Options:
     --help OR -h
     Print this help message.
 
-$ ./scripts/syncComponents.sh --spgwu-tiny-branch gtp_extension_header
+$ ./scripts/syncComponents.sh --spgwu-tiny-branch 2021.w28
 ---------------------------------------------------------
 OAI-AMF    component branch : develop
 OAI-SMF    component branch : develop
 OAI-NRF    component branch : develop
-OAI-SPGW-U component branch : gtp_extension_header
+OAI-SPGW-U component branch : 2021.w28
 ---------------------------------------------------------
 ....
 ```
