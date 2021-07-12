@@ -155,15 +155,20 @@ services:
             - AMF_IPV4_ADDRESS=192.168.61.196
             - AMF_PORT=80
             - AMF_API_VERSION=v1
+            - AMF_FQDN=cicd_oai_amf
             - UDM_IPV4_ADDRESS=127.0.0.1
             - UDM_PORT=80
             - UDM_API_VERSION=v1
+            - UDM_FQDN=localhost
             - UPF_IPV4_ADDRESS=192.168.61.198
+            - UPF_FQDN_0=cicd_oai_upf
             - NRF_IPV4_ADDRESS=192.168.61.195
             - NRF_PORT=80
             - NRF_API_VERSION=v1
+            - NRF_FQDN=cicd_oai_nrf
             - REGISTER_NRF=yes
             - DISCOVER_UPF=yes
+            - USE_FQDN_DNS=yes
         depends_on:
             - cicd_oai_nrf
             - cicd_oai_amf
