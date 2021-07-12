@@ -47,24 +47,44 @@ start:
   spgwu: true
   tcpdump: true
 
-config:
-  pidDirectory: "/var/run"
-  sgwS1uIf: "net1"
+multus:
   sgwS1uIp: "192.168.18.179"
   sgwS1uNetmask: "24"
-  sgwSxIf: "net2"
-  sgwSxIp: "192.168.101.131"
-  sgwSxNetmask: "26"
-  sgwSxGw: "192.168.101.128"
-  pgwSgiIf: "net1"
   pgwuSgiGw: "192.168.18.129"
-  netUeIp: "12.1.1.0/24"
+
+config:
+  gwId: 1
+  mnc03: "095"
+  mcc: 208
+  mnc: 95
+  tac: 40960
+  realm: "openairinterface.org" 
+  pidDirectory: "/var/run"
+  sgwS1uIf: "net1"
+  threadS1Upriority: 98
+  s1uThreads: 1
+  sgwSxIf: "eth0"
+  threadSXpriority: 98
+  sxThreads: 1
+  pgwSgiIf: "net1"
+  threadSGIpriority: 98
+  sgiThreads: 1
   netUeNatOption: "yes"
+  gtpExtentionHeaderPresent: "yes"
+  netUeIp: "12.1.1.0/24"
   spgwc0IpAdd: "192.168.101.130"
-  nrfIpv4Add: "192.168.18.178"
+  bypassUlPfcpRules: "no"
+  enable5GFeatures: "yes"
+  registerNrf: "yes"
+  useFqdnNrf: "yes"
+  upfFqdn5g: "oai-spgwu-tiny-svc"
+  nrfIpv4Add: "192.168.18.230"
   nrfPort: "80"
   nrfApiVersion: "v1"
-  registerNRF: "yes"
+  nrfFqdn: "oai-nrf-svc"
+  nssaiSst0: 222
+  nssaiSd0: 123
+  dnn0: "default" 
 
 persistence:
   # make it true for the first time when you want to create persistance volume 

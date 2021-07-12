@@ -38,9 +38,6 @@ def cn_ci_host = params.Host_CN_CI_Server
 def cn_ci_resource = params.CN_CI_Resource
 def ds_tester_ci_resource = params.DsTester
 
-// Location of the DsTester workspace
-def dsTestFrameworkLocation = params.dsTestFrameworkLocation
-
 // When triggered by upstream, specify which tag to use
 def upstreamTagToUse = params.upstreamTagToUse
 

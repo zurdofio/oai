@@ -1,4 +1,5 @@
 ---
+{{- if .Values.multus.create }}
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition 
 metadata:
@@ -13,9 +14,9 @@ spec:
         "type": "static",
         "addresses": [
                 {
-                        "address": {{- cat .Values.multus.n4IPadd "/" .Values.multus.n4Netmask | nospace | quote }},
-                        "gateway": {{- cat .Values.multus.n4Gw | nospace | quote }}
+                        "address": {{- cat .Values.multus.n4IPadd "/" .Values.multus.n4Netmask | nospace | quote }}
                 }
         ]
       }
     }'
+{{- end }}

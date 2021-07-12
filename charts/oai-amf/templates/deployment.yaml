@@ -31,10 +31,16 @@ spec:
       containers:
       - name: tcpdump
         image: image-registry.openshift-image-registry.svc:5000/oai/tcpdump-internal:latest
+        {{- if .Values.start.tcpdump}}
         command:
           - /bin/sh
           - -c
           - /usr/sbin/tcpdump -i any -w /pcap/oai-amf_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+        {{- else}}
+        command:
+          - /bin/sleep
+          - infinity
+        {{- end}}
         volumeMounts:
         - mountPath: "/pcap"
           name: cn5g-pv
@@ -53,6 +59,12 @@ spec:
         - containerPort: {{ .Values.service.http2Port }}
           name: http2
           protocol: TCP
+        {{- if .Values.start.amf}}
+        {{- else}}
+        command:
+          - /bin/sleep
+          - infinity
+        {{- end}}
         env:
           - name: INSTANCE
             valueFrom:
@@ -184,6 +196,16 @@ spec:
               configMapKeyRef:
                 name: {{ .Chart.Name }}-configmap
                 key: smfHttpVersion0
+          - name: SMF_FQDN_0
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Chart.Name }}-configmap
+                key: smfFqdn0
+          - name: SELECTED_0
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Chart.Name }}-configmap
+                key: selected0
           - name: SMF_INSTANCE_ID_1
             valueFrom:
               configMapKeyRef:
@@ -199,6 +221,16 @@ spec:
               configMapKeyRef:
                 name: {{ .Chart.Name }}-configmap
                 key: smfHttpVersion1
+          - name: SMF_FQDN_1
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Chart.Name }}-configmap
+                key: smfFqdn1
+          - name: SELECTED_1
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Chart.Name }}-configmap
+                key: selected1
           - name: NRF_IPV4_ADDRESS
             valueFrom:
               configMapKeyRef:
@@ -214,6 +246,11 @@ spec:
               configMapKeyRef:
                 name: {{ .Chart.Name }}-configmap
                 key: nrfApiVersion
+          - name: NRF_FQDN
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Chart.Name }}-configmap
+                key: nrfFqdn
           - name: AUSF_IPV4_ADDRESS
             valueFrom:
               configMapKeyRef:
@@ -239,6 +276,11 @@ spec:
               configMapKeyRef:
                 name: {{ .Chart.Name }}-configmap
                 key: smfSelection
+          - name: USE_FQDN_DNS
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Chart.Name }}-configmap
+                key: useFqdnDns
           - name: MYSQL_SERVER
             valueFrom:
               configMapKeyRef:
@@ -264,8 +306,6 @@ spec:
               configMapKeyRef:
                 name: {{ .Chart.Name }}-configmap
                 key: operatorKey
-#        command: ["/bin/bash","-c"]
-#        args: ["/openair-amf/bin/entrypoint.sh; /openair-amf/bin/oai_amf -c /openair-amf/etc/amf.conf -o"]
       volumes:
       - name: cn5g-pv
         persistentVolumeClaim:

@@ -47,17 +47,15 @@ service:
 
 start:
   nrf: true
-  #tcpdump: true
+  tcpdump: true
 
 config:
   instance: "0"
   pidDirectory: "/var/run"
-  nrfInterfaceNameForSBI: "net1"
+  nrfInterfaceNameForSBI: "eth0"
   nrfInterfacePortForSBI: "80"
   nrfInterfaceHttp2PortForSBI: "9090"
   nrfApiVersion: "v1"
-  nrfIpNg: "192.168.18.178"
-  nrfNetmaskNg: "24"
 
 persistence:
   # make it true for the first time when you want to create persistance volume 

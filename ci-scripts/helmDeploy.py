@@ -131,12 +131,12 @@ class ClusterDeploy:
 			res2 = re.search('already exists', str(res.strip()))
 			res3 = re.search('created', str(res.strip()))
 			if res2 is None and res3 is None:
-				logging.error(f'\u001B[1m Image Stream "{imageName}" Creation Failed on OC Cluster {ocProjectName}\u001B[0m')
+				logging.error(f'\u001B[1m Image Stream "{imageName}" Creation Failed on OC project {ocProjectName}\u001B[0m')
 				sys.exit(-1)
 			else:
 				logging.debug(f'\u001B[1m   Image Stream "{imageName}" created on OC project {ocProjectName}\u001B[0m')
-			subprocess.run(f'sudo podman tag {imageName}:{imageTag} default-route-openshift-image-registry.apps.5glab.nsa.eurecom.fr/{self.OCProjectName}/{imageName}:{imageTag}', shell=True)
-			res = subprocess.check_output(f'sudo podman push default-route-openshift-image-registry.apps.5glab.nsa.eurecom.fr/{self.OCProjectName}/{imageName}:{imageTag} --tls-verify=false 2>&1 | tee -a archives/5gcn_imagepush_summary.txt', shell=True, universal_newlines=True)
+			subprocess.run(f'sudo podman tag {imageName}:{imageTag} default-route-openshift-image-registry.apps.5glab.nsa.eurecom.fr/{ocProjectName}/{imageName}:{imageTag}', shell=True)
+			res = subprocess.check_output(f'sudo podman push default-route-openshift-image-registry.apps.5glab.nsa.eurecom.fr/{ocProjectName}/{imageName}:{imageTag} --tls-verify=false 2>&1 | tee -a archives/5gcn_imagepush_summary.txt', shell=True, universal_newlines=True)
 			time.sleep(10)
 			res2 = re.search('Storing signatures', str(res.strip()))
 			if res2 is None:
@@ -171,7 +171,6 @@ class ClusterDeploy:
 				logging.error(f'\u001B[1m Deploying "{imageName}" Failed using helm chart on OC Cluster\u001B[0m')
 				logging.error(f'\u001B[1m 	5GCN Deployment: KO \u001B[0m')
 				subprocess.run(f'echo "DEPLOYMENT: KO" > archives/deployment_status.log', shell=True)
-				self.UnDeploy_5gcn()
 				sys.exit(-1)
 			else:
 				subprocess.run(f'echo "{imageName}: HELM OK" >> archives/5gcn_helm_summary.txt 2>&1', shell=True)
@@ -199,8 +198,7 @@ class ClusterDeploy:
 			if isRunning == False:
 				logging.error(f'\u001B[1m POD "{imageName}" Service Running FAILED \u001B[0m')
 				subprocess.run(f'echo "{imageName}: POD KO" >> archives/5gcn_pods_summary.txt 2>&1', shell=True)
-				#self.UnDeploy_5gcn()
-				#sys.exit(-1)
+				sys.exit(-1)
 
 		if passPods == 5:
 			logging.debug(f'\u001B[1m   5GCN Deployment: OK \u001B[0m')
@@ -208,7 +206,6 @@ class ClusterDeploy:
 		else:
 			logging.error(f'\u001B[1m 	5GCN Deployment: KO \u001B[0m')
 			subprocess.run(f'echo "DEPLOYMENT: KO" > archives/deployment_status.log', shell=True)
-			self.UnDeploy_5gcn()
 			sys.exit(-1)
 		subprocess.run('oc logout', shell=True)
 		
@@ -220,16 +217,12 @@ class ClusterDeploy:
 		if res2 is None:
 			logging.error('\u001B[1m OC Cluster Login Failed\u001B[0m')
 			sys.exit(-1)
-		else:
-			logging.debug('\u001B[1m   Login to OC Cluster Successfully\u001B[0m')
 		res = subprocess.check_output(f'oc project {self.OCProjectName} || true', stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
 		res2 = re.search(f'Already on project "{self.OCProjectName}"', str(res.strip()))
 		res3 = re.search(f'Now using project "{self.OCProjectName}"', str(res.strip()))
 		if res2 is None and res3 is None:
 			logging.error(f'\u001B[1m Unable to access OC project {self.OCProjectName}\u001B[0m')
 			sys.exit(-1)
-		else:
-			logging.debug(f'\u001B[1m   Now using project {self.OCProjectName}\u001B[0m')
 
 		# UnDeploy the 5gcn pods
 		images = self.imageTags.split(',')
@@ -242,9 +235,7 @@ class ClusterDeploy:
 			res3 = re.search(f'Error: uninstall: Release not loaded: {imageName}: release: not found', str(res.strip()))
 			if res2 is not None:
 				logging.debug(f'\u001B[1m   UnDeployed "{imageName}" Successfully on OC Cluster\u001B[0m')
-			elif res3 is not None:
-				logging.debug(f'\u001B[1m   No Resource "{imageName}" found on OC Cluster on project "{self.OCProjectName}"\u001B[0m')
-			else:
+			elif res3 is None:
 				logging.error(f'\u001B[1m UnDeploying "{imageName}" Failed using helm chart on OC Cluster\u001B[0m')
 			time.sleep(2)
 			# Delete images and imagestream
@@ -256,8 +247,6 @@ class ClusterDeploy:
 			res3 = re.search('Error from server (NotFound):', str(res.strip()))
 			if res2 is None and res3 is None:
 				logging.debug(f'\u001B[1m Deleted the "{imageName}" Image and ImageStream\u001B[0m')
-			else:
-				logging.debug(f'\u001B[1m No Resource "{imageName}" Image and ImageStream found\u001B[0m')
 		subprocess.run('oc logout', shell=True)
 
 	def GetLogsConfigsPcaps(self):

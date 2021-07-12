@@ -2,14 +2,14 @@
 ## ref: https://hub.docker.com/r/library/mysql/tags/
 ##
 image: "image-registry.openshift-image-registry.svc:5000/oaicicd-tmp/mysql-internal"
-imageTag: "TAG"
+imageTag: "5.7.30"
 
 strategy:
   type: Recreate
 
 busybox:
-  image: "busybox"
-  tag: "1.32"
+  image: "image-registry.openshift-image-registry.svc:5000/oaicicd-5gcn-tmp/busybox-internal"
+  tag: "latest"
 
 testFramework:
   enabled: false

@@ -1,4 +1,4 @@
-# Default values for oai-spgwc.
+# Default values for oai-amf.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -22,7 +22,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: "oai-amf-sa"
+  name: "oai-amf-svc"
 
 podSecurityContext:
   runAsUser: 0
@@ -45,7 +45,7 @@ service:
 
 start:
   amf: true
-  #tcpdump: true
+  tcpdump: true
 
 multus:
   ngapIPadd: "192.168.18.177"
@@ -79,17 +79,23 @@ config:
   smfInstanceId0: "1"
   smfIpv4Addr0: "0.0.0.0"
   smfHttpVersion0: "v1"
+  smfFqdn0: "oai-amf-svc"
+  selected0: "true"
   smfInstanceId1: "2"
   smfIpv4Addr1: "127.0.0.1"
   smfHttpVersion1: "v1"
+  smfFqdn1: "oai-amf-svc"
+  selected1: "false"
   nrfIpv4Addr: "192.168.18.178"
   nrfPort: 80
   nrfApiVersion: "v1"
+  nrfFqdn: "oai-nrf-svc"
   ausfIpv4Addr: "127.0.0.1"
   ausfPort: 80
   ausfApiVersion: "v1"
-  nfRegistration: "no"
+  nfRegistration: "yes"
   smfSelection: "yes"
+  useFqdnDns: "yes"
   mySqlServer: "mysql"
   mySqlUser: "root"
   mySqlPass: "linux"
