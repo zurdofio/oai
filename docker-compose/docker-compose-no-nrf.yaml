@@ -195,11 +195,11 @@ networks:
         external:
             name: demo-oai-public-net
 # Incase the user wants docker-compose to create a bridge rather than creating the bridge manually then uncomment the below lines
-#     public_net:
-#         driver: bridge
-#         name: demo-oai-public-net
-#         ipam:
-#             config:
-#                 - subnet: 192.168.70.128/26
-#         driver_opts:
-#            com.docker.network.bridge.name: "demo-oai"
+    public_net:
+        driver: bridge
+        name: demo-oai-public-net
+        ipam:
+            config:
+                - subnet: 192.168.70.128/26
+        driver_opts:
+           com.docker.network.bridge.name: "demo-oai"

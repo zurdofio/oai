@@ -1,0 +1,224 @@
+#!/bin/groovy
+/*
+ * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The OpenAirInterface Software Alliance licenses this file to You under
+ * the OAI Public License, Version 1.1  (the "License"); you may not use this file
+ * except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.openairinterface.org/?page_id=698
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *-------------------------------------------------------------------------------
+ * For more information about the OpenAirInterface (OAI) Software Alliance:
+ *      contact@openairinterface.org
+ */
+
+//-------------------------------------------------------------------------------
+// Abstraction function to send social media messages:
+// like on Slack or Mattermost
+def sendSocialMediaMessage(pipeChannel, pipeColor, pipeMessage) {
+  if (params.pipelineUsesSlack != null) {
+    if (params.pipelineUsesSlack) {
+      slackSend channel: pipeChannel, color: pipeColor, message: pipeMessage
+    }
+  }
+}
+
+// Location of the CN executor node
+def cn_ci_host = params.Host_CN_CI_Server
+
+// for lock
+def cn_ci_resource = params.DockerContainers
+
+// When triggered by upstream, specify which tag to use
+def upstreamTagToUse = params.upstreamTagToUse
+
+// Location of the 2nd CN executor
+def new_host_flag = false
+def new_host = ""
+def new_host_user = ""
+
+// Location of the CN tester
+def dsT_host_flag = false
+def dsT_host = ""
+def dsT_host_user = ""
+def dsT_host_ip_addr = ""
+
+// Flags
+def scmEvent = false
+def upstreamEvent = false
+
+//-------------------------------------------------------------------------------
+// Pipeline start
+pipeline {
+  agent {
+    label cn_ci_host
+  }
+  options {
+    disableConcurrentBuilds()
+    timestamps()
+    ansiColor('xterm')
+    lock(cn_ci_resource)
+  }
+  stages {
+    stage ('Verify Parameters') {
+      steps {
+        script {
+          echo '\u2705 \u001B[32mVerify Parameters\u001B[0m'
+
+          JOB_TIMESTAMP = sh returnStdout: true, script: 'date --utc --rfc-3339=seconds | sed -e "s#+00:00##"'
+          JOB_TIMESTAMP = JOB_TIMESTAMP.trim()
+
+          if (params.Host_CN_CI_2nd_Server_Flag != null) {
+            new_host_flag = params.Host_CN_CI_2nd_Server_Flag
+            if (new_host_flag) {
+              new_host = params.Host_CN_CI_2nd_Server
+              new_host_user = params.Host_CN_CI_2nd_Server_Login
+              echo "1st Node   is ${NODE_NAME}"
+              echo "2nd Node   is ${new_host}"
+            } else {
+              echo "Node       is ${NODE_NAME}"
+            }
+          } else {
+            echo "Node       is ${NODE_NAME}"
+          }
+
+          // Find out the cause of the trigger
+          for (cause in currentBuild.getBuildCauses()) {
+            if (cause.toString() ==~ /.*UpstreamCause.*/) {
+              upstreamEvent = true
+            }
+          }
+          if (upstreamEvent) {
+            sh "git clean -x -d -f > /dev/null 2>&1"
+            sh "git fetch --prune > /dev/null 2>&1"
+            sh 'git checkout -f ' + upstreamTagToUse
+          }
+          if ((!upstreamEvent) && (!scmEvent)) {
+            sh "git clean -x -d -f > /dev/null 2>&1"
+          }
+          sh "mkdir -p archives/cn5g"
+          sh "mkdir -p archives/cn5gwithnoNRF"
+        }
+      }
+    }
+    stage ('Deploy Whole 5G Core Network with NRF') {
+      steps {
+        script {
+          echo '\u2705 \u001B[32mDeploy CN5G using Docker-Compose with NRF\u001B[0m'  
+          dir('docker-compose') {
+            sh 'docker-compose -f docker-compose.yaml up -d  > ../archives/cn5g/compose_5gcn_up.log 2>&1'
+            sh 'sleep 100'
+            // Do a check on number of healthy containers
+            // 6 == mysql + nrf + amf + smf + upf(spgwu-tiny)
+            ret = sh returnStdout: true, script: 'docker-compose ps -a | grep -v unhealthy | grep -c healthy || true'
+            ret = ret.trim()
+            if (ret != '5') {
+              error "Deployment went wrong!"
+            }          
+          }
+        }
+      }
+      post {
+        always {
+          script {
+            sh 'docker logs oai-nrf > archives/cn5g/oai_nrf.log'
+            sh 'docker logs oai-amf > archives/cn5g/oai_amf.log'
+            sh 'docker logs oai-smf > archives/cn5g/oai_smf.log'
+            sh 'docker logs oai-spgwu > archives/cn5g/oai_spgwu.log'
+          }
+        }
+        success {
+          script {
+            sh 'echo "DEPLOYMENT: OK"'
+          }
+        }
+        unsuccessful {
+          script {
+            sh 'echo "DEPLOYMENT: KO"'
+          }
+        }
+      }
+    }
+    stage ('Undeploy 5G-CN with NRF') {
+      steps {
+        script {
+          echo '\u2705 \u001B[32mUn-Deploy CN5G with NRF\u001B[0m'
+          dir('docker-compose') {
+            sh 'docker-compose down > ../archives/cn5g/compose_normal_down.log 2>&1'
+          }
+        }
+      }
+    }
+
+    stage ('Deploy Whole 5G Core Network with no NRF') {
+      steps {
+        script {
+          echo '\u2705 \u001B[32mDeploy CN5G using Docker-Compose with no NRF\u001B[0m'  
+          dir('docker-compose') {
+            sh 'docker-compose -f docker-compose-no-nrf.yaml up -d  > ../archives/cn5gwithnoNRF/compose_5gcn_up.log 2>&1'
+            sh 'sleep 100'
+            // Do a check on number of healthy containers
+            // 5 == mysql + amf + smf + upf(spgwu-tiny)
+            ret = sh returnStdout: true, script: 'docker-compose ps -a | grep -v unhealthy | grep -c healthy || true'
+            ret = ret.trim()
+            if (ret != '4') {
+              error "Deployment went wrong with no NRF!"
+            }          
+          }
+        }
+      }
+      post {
+        always {
+          script {
+            sh 'docker logs oai-amf > archives/cn5gwithnoNRF/oai_amf.log'
+            sh 'docker logs oai-smf > archives/cn5gwithnoNRF/oai_smf.log'
+            sh 'docker logs oai-spgwu > archives/cn5gwithnoNRF/oai_spgwu.log'
+          }
+        }
+        success {
+          script {
+            sh 'echo "DEPLOYMENT: OK with no NRF"'
+          }
+        }
+        unsuccessful {
+          script {
+            sh 'echo "DEPLOYMENT: KO with no NRF"'
+          }
+        }
+      }
+    }
+    stage ('Undeploy 5G-CN with no NRF') {
+      steps {
+        script {
+          echo '\u2705 \u001B[32mUn-Deploy CN5G with no NRF\u001B[0m'
+          dir('docker-compose') {
+            sh 'docker-compose down > ../archives/cn5gwithnoNRF/compose_normal_down.log 2>&1'
+          }
+        }
+      }
+    }
+  }
+  post {
+    always {
+      script {
+        // Remove any leftover containers/networks
+        dir('docker-compose') {
+          sh 'docker-compose down'
+        }
+        // Zipping all archived log files
+        sh "zip -r -qq cn5g_deploy_docker_logs.zip archives"
+        if (fileExists('cn5g_deploy_docker_logs.zip')) {
+          archiveArtifacts artifacts: 'cn5g_deploy_docker_logs.zip'
+        }
+      }
+    }
+  }
+}
