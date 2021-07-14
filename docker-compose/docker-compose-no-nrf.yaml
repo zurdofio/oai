@@ -130,7 +130,7 @@ services:
                 ipv4_address: 192.168.70.133
     oai-spgwu:
         container_name: "oai-spgwu"
-        image: oai-spgwu-tiny:gtp-ext-header
+        image: oai-spgwu-tiny:develop
         environment:
             - TZ=Europe/Paris
             - PID_DIRECTORY=/var/run
@@ -202,4 +202,4 @@ networks:
 #             config:
 #                 - subnet: 192.168.70.128/26
 #         driver_opts:
-#             com.docker.network.bridge.name: "demo-oai"
+#            com.docker.network.bridge.name: "demo-oai"
