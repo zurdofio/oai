@@ -238,8 +238,8 @@ pipeline {
         if (fileExists('cn5g_fed_cluster_logs.zip')) {
           archiveArtifacts artifacts: 'cn5g_fed_cluster_logs.zip'
         }
-        if (fileExists('test_results_oai_cn5g.html')) {
-          archiveArtifacts artifacts: 'test_results_oai_cn5g.html'
+        if (fileExists('test_results_oai_cn5g_oc.html')) {
+          archiveArtifacts artifacts: 'test_results_oai_cn5g_oc.html'
         }
       }
     }
