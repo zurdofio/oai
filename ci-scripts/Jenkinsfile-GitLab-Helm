@@ -151,6 +151,7 @@ pipeline {
               sh "git clean -x -d -f > /dev/null 2>&1"
               sh "git fetch --prune > /dev/null 2>&1"
               sh 'git checkout -f ' + upstreamTagToUse
+              sh 'mkdir -p archives DS-TEST-RESULTS'
             }
             imageTags = "mysql:5.7.30,oai-nrf:${nrfTag},oai-amf:${amfTag},oai-smf:${smfTag},oai-spgwu-tiny:${spgwuTag}"
           }

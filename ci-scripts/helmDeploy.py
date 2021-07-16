@@ -43,11 +43,6 @@ logging.basicConfig(
     format="[%(asctime)s] %(name)s:%(levelname)s: %(message)s"
 )
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="[%(asctime)s] %(name)s:%(levelname)s: %(message)s"
-)
-
 class ClusterDeploy:
 	def __init__(self):
 		self.OCUserName = ""
