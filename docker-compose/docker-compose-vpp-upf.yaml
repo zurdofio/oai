@@ -18,8 +18,8 @@ services:
             timeout: 5s
             retries: 5
         networks:
-            public_net:
-                ipv4_address: 192.168.70.131
+            public_net_core:
+                ipv4_address: 192.168.71.131
     oai-amf:
         container_name: "oai-amf"
         image: oai-amf:develop
@@ -49,16 +49,12 @@ services:
             - AMF_INTERFACE_NAME_FOR_NGAP=eth0
             - AMF_INTERFACE_NAME_FOR_N11=eth0
             - SMF_INSTANCE_ID_0=1
-            - SMF_FQDN_0=oai-smf
-            - SMF_IPV4_ADDR_0=192.168.70.133
+            - SMF_IPV4_ADDR_0=192.168.71.133
             - SMF_HTTP_VERSION_0=v1
-            - SELECTED_0=true
             - SMF_INSTANCE_ID_1=2
-            - SMF_FQDN_1=oai-smf
             - SMF_IPV4_ADDR_1=0.0.0.0
             - SMF_HTTP_VERSION_1=v1
-            - SELECTED_1=false
-            - MYSQL_SERVER=192.168.70.131
+            - MYSQL_SERVER=192.168.71.131
             - MYSQL_USER=root
             - MYSQL_PASS=linux
             - MYSQL_DB=oai_db
@@ -67,14 +63,14 @@ services:
             - NRF_PORT=80
             - NF_REGISTRATION=no
             - SMF_SELECTION=no
-            - USE_FQDN_DNS=no
             - NRF_API_VERSION=v1
-            - NRF_FQDN=oai-nrf
             - AUSF_IPV4_ADDRESS=127.0.0.1
             - AUSF_PORT=80
             - AUSF_API_VERSION=v1
         depends_on:
             - mysql
+            - vpp-upf
+            - oai-ext-dn
         volumes:
             - ./amf-healthcheck.sh:/openair-amf/bin/amf-healthcheck.sh
         healthcheck:
@@ -83,11 +79,11 @@ services:
             timeout: 15s
             retries: 5
         networks:
-            public_net:
-                ipv4_address: 192.168.70.132
+            public_net_core:
+                ipv4_address: 192.168.71.132
     oai-smf:
         container_name: "oai-smf"
-        image: oai-smf:develop
+        image: oai-smf:nwi
         environment:
             - TZ=Europe/Paris
             - INSTANCE=0
@@ -99,83 +95,71 @@ services:
             - SMF_API_VERSION=v1
             - DEFAULT_DNS_IPV4_ADDRESS=192.168.18.129
             - DEFAULT_DNS_SEC_IPV4_ADDRESS=8.8.8.8
-            - AMF_IPV4_ADDRESS=192.168.70.132
+            - AMF_IPV4_ADDRESS=192.168.71.132
             - AMF_PORT=80
             - AMF_API_VERSION=v1
-            - AMF_FQDN=oai-amf
             - UDM_IPV4_ADDRESS=127.0.0.1
             - UDM_PORT=80
             - UDM_API_VERSION=v1
-            - UDM_FQDN=localhost
-            - UPF_IPV4_ADDRESS=192.168.70.134
-            - UPF_FQDN_0=oai-upf
+            - UPF_IPV4_ADDRESS=192.168.71.202
             - NRF_IPV4_ADDRESS=0.0.0.0
             - NRF_PORT=80
             - NRF_API_VERSION=v1
-            - NRF_FQDN=oai-nrf
             - REGISTER_NRF=no
-            - USE_FQDN_DNS=no
             - DISCOVER_UPF=no
+            - USE_NETWORK_INSTANCE=yes
+        extra_hosts:
+            - "gw1.vppupf.node.5gcn.mnc95.mcc208.3gppnetwork.org:192.168.71.202"
         depends_on:
             - oai-amf
         volumes:
-            - ./smf-healthcheck.sh:/openair-smf/bin/smf-healthcheck.sh
+             - ./smf-healthcheck.sh:/openair-smf/bin/smf-healthcheck.sh
         healthcheck:
-            test: /bin/bash -c "/openair-smf/bin/smf-healthcheck.sh"
-            interval: 10s
-            timeout: 5s
-            retries: 5
+             test: /bin/bash -c "/openair-smf/bin/smf-healthcheck.sh"
+             interval: 10s
+             timeout: 5s
+             retries: 5
         networks:
-            public_net:
-                ipv4_address: 192.168.70.133
-    oai-spgwu:
-        container_name: "oai-spgwu"
-        image: oai-spgwu-tiny:develop
-        environment:
-            - TZ=Europe/Paris
-            - PID_DIRECTORY=/var/run
-            - SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP=eth0
-            - SGW_INTERFACE_NAME_FOR_SX=eth0
-            - PGW_INTERFACE_NAME_FOR_SGI=eth0
-            - NETWORK_UE_NAT_OPTION=yes
-            - NETWORK_UE_IP=12.1.1.0/24
-            - SPGWC0_IP_ADDRESS=192.168.70.133
-            - BYPASS_UL_PFCP_RULES=no
-            - MCC=208
-            - MNC=95
-            - MNC03=095
-            - TAC=40960
-            - GW_ID=1
-            - REALM=openairinterface.org
-            - ENABLE_5G_FEATURES=yes
-            - REGISTER_NRF=no
-            - USE_FQDN_NRF=no
-            - UPF_FQDN_5G=oai-spgwu
-            - NRF_IPV4_ADDRESS=0.0.0.0
-            - NRF_PORT=80
-            - NRF_API_VERSION=v1
-            - NRF_FQDN=oai-nrf
-            - NSSAI_SST_0=222
-            - NSSAI_SD_0=123
-            - DNN_0=default
-        depends_on:
-            - oai-smf
-        cap_add:
-            - NET_ADMIN
-            - SYS_ADMIN
-        cap_drop:
-            - ALL
+            public_net_core:
+                ipv4_address: 192.168.71.133
+    vpp-upf:
+        image: vpp-upg:develop
         privileged: true
-        volumes:
-            - ./spgwu-healthcheck.sh:/openair-spgwu-tiny/bin/spgwu-healthcheck.sh
+        container_name: vpp-upf
+        environment:
+            - NWI_CORE=core.oai.org
+            - NWI_ACCESS=access.oai.org
+            - NWI_SGI=sgi.oai.org
+            - GW_ID=1
+            - MNC03=95
+            - MCC=208
+            - REALM=3gppnetwork.org
+            - NETWORK_UE_IP=12.1.1.0/24
+            - N3_IPV4_ADDRESS_REMOTE=192.168.72.141
+            - N3_IPV4_ADDRESS_LOCAL=192.168.72.202
+            - N4_IPV4_ADDRESS_REMOTE=192.168.71.133
+            - N4_IPV4_ADDRESS_LOCAL=192.168.71.202            
+            - N6_IPV4_ADDRESS_REMOTE=192.168.73.135
+            - N6_IPV4_ADDRESS_LOCAL=192.168.73.202
+            - VPP_MAIN_CORE=0
+            - VPP_CORE_WORKER=1
+#           - VPP_PLUGIN_PATH=/usr/lib64/vpp_plugins/                # RHEL7
+            - VPP_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/vpp_plugins/ # Ubntu18.04
+            - INTERFACE_ACCESS=eth0
+            - INTERFACE_CORE=eth1
+            - INTERFACE_SGI=eth2
         healthcheck:
-            test: /bin/bash -c "/openair-spgwu-tiny/bin/spgwu-healthcheck.sh"
+            test: /bin/bash -c "pgrep vpp"
             interval: 10s
             timeout: 5s
             retries: 5
         networks:
-            public_net:
-                ipv4_address: 192.168.70.134
+            public_net_core:
+                ipv4_address: 192.168.71.134
+            public_net_access:
+                ipv4_address: 192.168.72.134
+            public_net_sgi_lan:
+                ipv4_address: 192.168.73.134
     oai-ext-dn:
         image: ubuntu:bionic
         privileged: true
@@ -183,23 +167,37 @@ services:
         entrypoint: /bin/bash -c \
               "apt update; apt install -y iptables iproute2 iputils-ping;"\
               "iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;"\
-              "ip route add 12.1.1.0/24 via 192.168.70.134 dev eth0; sleep infinity"
+              "ip route add 12.1.1.0/24 via 192.168.73.202 dev eth0; sleep infinity"
         command: ["/bin/bash", "-c", "trap : TERM INT; sleep infinity & wait"]
         depends_on:
-            - oai-spgwu
+            - vpp-upf
         networks:
-            public_net:
-                ipv4_address: 192.168.70.135
+            public_net_sgi_lan:
+                ipv4_address: 192.168.73.135
 networks:
-    public_net:
-        external:
-            name: demo-oai-public-net
+    public_net_core:
+        name: oai-public-core
+        ipam:
+            config:
+                - subnet: 192.168.71.0/24
+    public_net_access:
+        name: oai-public-access
+        ipam:
+            config:
+                - subnet: 192.168.72.0/24
+    public_net_sgi_lan:
+        name: oai-public-sgi-lan
+        ipam:
+            config:
+                - subnet: 192.168.73.0/24
+        
+    
 # Incase the user wants docker-compose to create a bridge rather than creating the bridge manually then uncomment the below lines
 #     public_net:
 #         driver: bridge
 #         name: demo-oai-public-net
 #         ipam:
 #             config:
-#                 - subnet: 192.168.70.128/26
+#                 - subnet: 192.168.71.128/26
 #         driver_opts:
-#            com.docker.network.bridge.name: "demo-oai"
+#             com.docker.network.bridge.name: "demo-oai"

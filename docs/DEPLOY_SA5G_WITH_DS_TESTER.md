@@ -7,13 +7,13 @@
       </a>
     </td>
     <td style="border-collapse: collapse; border: none; vertical-align: center;">
-      <b><font size = "5">OpenAirInterface 5G Core Network Deployment and Testing with dsTest</font></b>
+      <b><font size = "5">OpenAirInterface 5G Core Network Deployment using Docker-Compose and Testing with dsTest</font></b>
     </td>
   </tr>
 </table>
 
 
-![SA dsTest Demo](./images/5gCN.jpg)
+![SA dsTest Demo](./images/docker-compose/5gCN.jpg)
 
 **TABLE OF CONTENTS**
 
@@ -183,7 +183,7 @@ To know how to configure the machine with the above requirements vist [pre-requi
 
 - [SmartEvents State Machine](https://www.developingsolutions.com/Help/Topics/SmartFlow-SmartEvents-State-Machines.htm) used for this dsTest scenario is below, the number on each arrow between different states depicts transition interval in milli seconds. 
 
-![SmartEvent State Machine](./images/smartevent.png)
+![SmartEvent State Machine](./images/docker-compose/smartevent.png)
 
 
 
@@ -198,13 +198,24 @@ To know how to configure the machine with the above requirements vist [pre-requi
     (docker-compose-host)$ pwd
     /home/<docker-compose-host>/oai/oai-cn-fed/docker-compose
     (docker-compose-host)$ ./core-network
+
     Only use the following options
 
-    start: start the 5gCN
-    stop: stops the 5gCN
+    start [option1] [option2]: start the 5gCN
+    stop [option1] [option2]: stops the 5gCN
+
+    --option1
     nrf: nrf should be used
     no-nrf: nrf should not be used
-    Example: ./core-network.sh start nrf
+
+    --option2
+    vpp-upf: vpp-upf should be used (only works without nrf, no-nrf option1)
+    spgwu : spgwu should be used as upf (works with or without nrf, nrf or no-nrf option1)
+
+    Example 1 : ./core-network.sh start nrf spgwu
+    Example 2: ./core-network.sh start no-nrf vpp-upf
+    Example 1 : ./core-network.sh stop nrf spgwu
+    Example 2: ./core-network.sh stop no-nrf vpp-upf
     ```
 - Before executing the script it is better to start capturing packets to see the message flow between smf <--> nrf <--> upf. The packets will be captured on **demo-oai** bridge which should be configured on the `docker-compose-host` machine. 
 
@@ -214,7 +225,7 @@ To know how to configure the machine with the above requirements vist [pre-requi
 - Starting the core network components, 
 
     ```bash
-    (docker-compose-host)$ ./core-network start nrf
+    (docker-compose-host)$ ./core-network start nrf spgwu
     Starting 5gcn components in the order nrf, mysql, amf, smf, spgwu...
     Creating mysql   ... done
     Creating oai-nrf ... done
@@ -299,14 +310,15 @@ This section is subdivided in two parts the first part for analysing the message
 
 
 
-| Pcap/log files                                                                             |
-|:------------------------------------------------------------------------------------------ |
-| [5gcn-deployment.pcap](./results/pcap/5gcn-deployment.pcap)                                |
-| [scenario-execution.pcap](./results/pcap/scenario-execution.pcap)                          |
-| [amf.log](./results/logs/amf.log), [initialmessage.log](./results/logs/initialmessage.log) |
-| [smf.log](./results/logs/smf.log)                                                          |
-| [nrf.log](./results/logs/nrf.log)                                                          |
-| [spgwu.log](./results/logs/spgwu.log)                                                      |
+
+| Pcap/log files                                                                                           |
+|:-------------------------------------------------------------------------------------------------------- |
+| [5gcn-deployment.pcap](./results/dsTest/pcap/5gcn-deployment.pcap)                                       |
+| [scenario-execution.pcap](./results/dsTest/pcap/scenario-execution.pcap)                                 |
+| [amf.log](./results/dsTest/logs/amf.log), [initialmessage.log](./results/dsTest/logs/initialmessage.log) |
+| [smf.log](./results/dsTest/logs/smf.log)                                                                 |
+| [nrf.log](./results/dsTest/logs/nrf.log)                                                                 |
+| [spgwu.log](./results/dsTest/logs/spgwu.log)                                                             |
 
 
 ### Analysing initial message exchange
@@ -320,7 +332,7 @@ Using wireshark open 5gcn-deployment.pcap use the filter http || pfcp
 - SMF <--> UPF PFCP Association Setup request and response: Packet 42, 46
 - Message exchange between SMF, NRF and UPF can be seen in nrf.log but the name of the network function is replaced with a unique identifier (UUID). 
 
-![Analysing initial message exchange](./images/start.png)
+![Analysing initial message exchange](./images/docker-compose/start.png)
 
 
 ### Analysing scenario execution
@@ -338,13 +350,13 @@ Using wireshark open scenario-execution.pcap use the filter ngap || http || pfcp
 - Allocated UE IP-address can be seen in Packet 93, 102, 109
 - Echo request response between UE and oai-ext-dn container: Packet 129, 130
 
-![Scenario execution 1](./images/scenario-1.png)
+![Scenario execution 1](./images/docker-compose/scenario-1.png)
 
 - UE PDU session release request: Packet 394
 - AMF <--> SMF PDU session release request: Packet 398
 - NGreset : Packet 473
 
-![Scenario execution 2](./images/scenario-2.png)
+![Scenario execution 2](./images/docker-compose/scenario-2.png)
 
 
 ## 9. Demo Video ##
