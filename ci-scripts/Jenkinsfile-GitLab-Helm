@@ -38,9 +38,6 @@ def cn_ci_host = params.Host_CN_CI_Server
 def cn_ci_resource = params.CN_CI_Resource
 def ds_tester_ci_resource = params.DsTester
 
-// Location of the DsTester workspace
-def dsTestFrameworkLocation = params.dsTestFrameworkLocation
-
 // When triggered by upstream, specify which tag to use
 def upstreamTagToUse = params.upstreamTagToUse
 
@@ -82,12 +79,6 @@ pipeline {
           JOB_TIMESTAMP = JOB_TIMESTAMP.trim()
 
           def allParametersPresent = true
-          if (params.remote_IPAddress == null) {
-            allParametersPresent = false
-          }
-          if (params.remote_Credentials == null) {
-            allParametersPresent = false
-          }
           if (params.OC_Credentials == null) {
             allParametersPresent = false
           }
@@ -119,6 +110,9 @@ pipeline {
               } else {
                 dsT_host_ip_addr = params.DS_Tester_Server_IP_Addr
               }
+              if (params.dsTesterGitLabRepository_Credentials == null) {
+                allParametersPresent = false
+              }
               if (allParametersPresent) {
                 echo "DS Tester  is on ${dsT_host}"
               } else {
@@ -128,16 +122,17 @@ pipeline {
             }
           }
 
+          // Clean workspace and prepare artifacts location
+          sh "git clean -x -d -f > /dev/null 2>&1"
+          sh "mkdir -p archives DS-TEST-RESULTS"
+
           // Find out the cause of the trigger
           for (cause in currentBuild.getBuildCauses()) {
             if (cause.toString() ==~ /.*UpstreamCause.*/) {
               upstreamEvent = true
-            //} else {
-            //  scmEvent = true
             }
           }
           withCredentials([
-            [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.remote_Credentials}", usernameVariable: 'remote_Username', passwordVariable: 'remote_Password'],
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.OC_Credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
           ]) {
             if (upstreamEvent) {
@@ -156,36 +151,6 @@ pipeline {
               sh "git clean -x -d -f > /dev/null 2>&1"
               sh "git fetch --prune > /dev/null 2>&1"
               sh 'git checkout -f ' + upstreamTagToUse
-              sh "zip -r -qq oai-cn5g-fed.zip .git"
-              sh "mkdir -p archives DS-TEST-RESULTS"
-              // Prepare the workspace in the remote server 
-              copyTo2ndServer('oai-cn5g-fed.zip', true, ${remote_Username}, ${params.remote_IPAddress})
-              myShCmd('git clean -x -d -f > /dev/null 2>&1', true, ${remote_Username}, ${params.remote_IPAddress})
-              myShCmd('mkdir -p archives DS-TEST-RESULTS', true, ${remote_Username}, ${params.remote_IPAddress})
-            }
-            if (scmEvent) {
-              sh "git clean -x -d -f > /dev/null 2>&1"
-              if ("MERGE".equals(env.gitlabActionType)) {
-                sh "./ci-scripts/doGitLabMerge.sh --src-branch ${env.gitlabSourceBranch} --src-commit ${env.gitlabMergeRequestLastCommit} --target-branch ${env.gitlabTargetBranch} --target-commit ${GIT_COMMIT}"
-              }
-              sh "zip -r -qq oai-cn5g-fed.zip .git"
-              sh "mkdir -p archives DS-TEST-RESULTS"
-              // Prepare the workspace in remote server
-              copyTo2ndServer('oai-cn5g-fed.zip', true, ${remote_Username}, ${params.remote_IPAddress})
-              myShCmd('git clean -x -d -f > /dev/null 2>&1', true, ${remote_Username}, ${params.remote_IPAddress})
-              if ("MERGE".equals(env.gitlabActionType)) {
-                myShCmd("./ci-scripts/doGitLabMerge.sh --src-branch ${env.gitlabSourceBranch} --src-commit ${env.gitlabMergeRequestLastCommit} --target-branch ${env.gitlabTargetBranch} --target-commit ${GIT_COMMIT}", new_host_flag, new_host_user, new_host)
-              }
-              myShCmd('mkdir -p archives DS-TEST-RESULTS', true, ${remote_Username}, ${params.remote_IPAddress})
-            }
-            if ((!upstreamEvent) && (!scmEvent)) {
-              sh "git clean -x -d -f > /dev/null 2>&1"
-              sh "zip -r -qq oai-cn5g-fed.zip .git"
-              sh "mkdir -p archives DS-TEST-RESULTS"
-              // Prepare the workspace in the remote server 
-              copyTo2ndServer('oai-cn5g-fed.zip', true, remote_Username, params.remote_IPAddress)
-              myShCmd('git clean -x -d -f > /dev/null 2>&1', true, remote_Username, params.remote_IPAddress)
-              myShCmd('mkdir -p archives DS-TEST-RESULTS', true, remote_Username, params.remote_IPAddress)
             }
             imageTags = "mysql:5.7.30,oai-nrf:${nrfTag},oai-amf:${amfTag},oai-smf:${smfTag},oai-spgwu-tiny:${spgwuTag}"
           }
@@ -195,18 +160,49 @@ pipeline {
     stage ('Deploy Whole 5G Core Network') {
       steps {
         script {
-          echo '\u2705 \u001B[32mDeploy CN5G in idle mode\u001B[0m'
+          echo '\u2705 \u001B[32mDeploy CN5G on Cluster\u001B[0m'
           withCredentials([
-            [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.remote_Credentials}", usernameVariable: 'remote_Username', passwordVariable: 'remote_Password'],
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.OC_Credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
           ]) {
-            dir('ci-scripts') {
-              try {
-                sh "python3 helmDeploy.py --mode=Deploy --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
-              } catch (Exception e) {
-                currentBuild.result = 'FAILURE'
+            sh "python3 ci-scripts/helmDeploy.py --mode=Deploy --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
+          }
+        }
+      }
+    }
+    stage ('Check with DS Tester') {
+      when { expression {dsT_host_flag} }
+      steps {
+        lock (ds_tester_ci_resource) {
+          script {
+            echo '\u2705 \u001B[32mTesting with DS Tester\u001B[0m'
+            if (fileExists("dstester")) {
+              sh "rm -Rf dstester > /dev/null 2>&1"
+            }
+            sh "mkdir -p dstester"
+            dir ('dstester') {
+              withCredentials([
+                [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.dsTesterGitLabRepository_Credentials}", usernameVariable: 'git_username', passwordVariable: 'git_token']
+              ]) {
+                sh "git clone https://${git_username}:${git_token}@github.com/OPENAIRINTERFACE/chasseur.git . > ../git_clone.log 2>&1"
+                sh "git checkout develop >> ../git_clone.log 2>&1"
+                try {
+                  sh "python3 jenkins/dogmatix-agent.py -f jenkins/suit-helm-charts.yaml | tee ../DS-TEST-RESULTS/dsTester_Summary.txt"
+                } catch (Exception e) {
+                  currentBuild.result = 'FAILURE'
+                  echo "dsTester Running FAILED"
+                } 
               }
             }
+            withCredentials([
+              [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.OC_Credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
+            ]) {
+              try {
+                sh "python3 ci-scripts/helmDeploy.py --mode=GetLogs --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
+              } catch (Exception e) {
+                echo "Unable to collect the logs, configs, pcaps"
+              }
+            }
+            sh "python3 ./ci-scripts/toCheckDSTesterResult1.py"
           }
         }
       }
@@ -214,69 +210,38 @@ pipeline {
     stage ('Undeploy 5G-CN') {
       steps {
         script {
+          echo '\u2705 \u001B[32mUnDeploy CN5G on Cluster\u001B[0m'
           withCredentials([
-            [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.remote_Credentials}", usernameVariable: 'remote_Username', passwordVariable: 'remote_Password'],
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.OC_Credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
           ]) {
-            dir('ci-scripts') {
-              try {
-                sh "python3 helmDeploy.py --mode=UnDeploy --remoteIPAdd=${params.remote_IPAddress} --remoteUserName=${remote_Username} --remotePassword=${remote_Password} --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
-              } catch (Exception e) {
-                currentBuild.result = 'FAILURE'
-              }
-            }
+            sh "python3 ci-scripts/helmDeploy.py --mode=UnDeploy --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
           }
         }
       }
     }
   }
-}
-
-// Functions
-
-def copyTo2ndServer(filename, flag, user, host) {
-  if (flag) {
-    if ("oai-cn5g-fed.zip".equals(filename)) {
-      sh "ssh ${user}@${host} 'rm -rf /tmp/CI-CN5G-FED-RHEL8'"
-      sh "ssh ${user}@${host} 'mkdir -p /tmp/CI-CN5G-FED-RHEL8'"
+  post {
+    always {
+      script {
+        withCredentials([
+          [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.OC_Credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
+        ]) {
+        // Remove any leftover containers/networks
+          sh "python3 ci-scripts/helmDeploy.py --mode=UnDeploy --OCUserName=${OC_Username} --OCPassword=${OC_Password} --OCProjectName=${OC_ProjectName} --imageTags=${imageTags}"
+        }
+        // Generating the HTML report
+        sh 'python3 ./ci-scripts/dsTestGenerateHTMLReport1.py --job_name=' + JOB_NAME + ' --job_id=' + BUILD_ID + ' --job_url=' + BUILD_URL
+  
+        // Zipping all archived log files
+        sh "zip -r -qq cn5g_fed_cluster_logs.zip archives DS-TEST-RESULTS"
+        sh "rm -rf archives DS-TEST-RESULTS"
+        if (fileExists('cn5g_fed_cluster_logs.zip')) {
+          archiveArtifacts artifacts: 'cn5g_fed_cluster_logs.zip'
+        }
+        if (fileExists('test_results_oai_cn5g_oc.html')) {
+          archiveArtifacts artifacts: 'test_results_oai_cn5g_oc.html'
+        }
+      }
     }
-    sh "scp ${filename} ${user}@${host}:/tmp/CI-CN5G-FED-RHEL8"
-    if ("oai-cn5g-fed.zip".equals(filename)) {
-      sh "ssh ${user}@${host} 'cd /tmp/CI-CN5G-FED-RHEL8 && unzip -qq oai-cn5g-fed.zip && rm oai-cn5g-fed.zip'"
-      sh "ssh ${user}@${host} 'cd /tmp/CI-CN5G-FED-RHEL8 && git checkout -f ${GIT_COMMIT}'"
-      sh "ssh ${user}@${host} 'cd /tmp/CI-CN5G-FED-RHEL8 && git log -n1'"
-    }
   }
-}
-
-def copyFrom2ndServer(filename, target, flag, user, host) {
-  if (flag) {
-    sh "scp ${user}@${host}:/tmp/CI-CN5G-FED-RHEL8/${filename} ${target}"
-  }
-}
-
-def myShCmd(cmd, flag, user, host) {
-  if (flag) {
-    sh "ssh -t -t ${user}@${host} 'cd /tmp/CI-CN5G-FED-RHEL8 && ${cmd}'"
-  } else {
-    sh "${cmd}"
-  }
-}
-
-def myShCmdWithLog(cmd, logFile, flag, user, host) {
-  if (flag) {
-    sh "ssh -t -t ${user}@${host} 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:.:/usr/local/devsol/bin && ${cmd}' > ${logFile} 2>&1"
-  } else {
-    sh "${cmd} > ${logFile} 2>&1"
-  }
-}
-
-def myShRetCmd(cmd, flag, user, host) {
-  if (flag) {
-    ret = sh returnStdout: true, script: "ssh -t -t ${user}@${host} 'cd /tmp/CI-CN5G-FED-RHEL8 && ${cmd}'"
-  } else {
-    ret = sh returnStdout: true, script: "${cmd}"
-  }
-  ret = ret.trim()
-  return ret
 }

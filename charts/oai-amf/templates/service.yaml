@@ -1,14 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Chart.Name }}-sa
+  name: {{ .Chart.Name }}-svc
   labels:
     {{- include "oai-amf.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
-{{- if  contains "ClusterIP" .Values.service.type }}
-  clusterIP: None
-{{- end }}
   ports:
     - name: oai-amf
       # Port accessible outside cluster

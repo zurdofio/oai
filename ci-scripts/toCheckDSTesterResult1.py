@@ -25,7 +25,6 @@ import sys
 import subprocess
 import yaml
 import os
-import time
 
 locexist = False
 cwd = os.getcwd()

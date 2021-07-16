@@ -1,4 +1,4 @@
-# Default values for oai-spgwc.
+# Default values for oai-smf.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -9,7 +9,7 @@ namespace: "PROJECT"
 image:
   registry: local
   repository: image-registry.openshift-image-registry.svc:5000/PROJECT/oai-smf
-  version: TAG
+  version: "TAG"
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: Always
 
@@ -48,14 +48,14 @@ start:
   tcpdump: true
 
 multus:
-  n4IPadd: "192.168.101.130"
-  n4Netmask: "26"
-  n4Gw: "192.168.101.128"
+  create: false
+  n4IPadd: "192.168.18.178"
+  n4Netmask: "24"
 
 config:
   instance: "0"
   pidDirectory: "/var/run"
-  smfInterfaceNameForN4: "net1"
+  smfInterfaceNameForN4: "eth0"
   smfInterfaceNameForSBI: "eth0"
   smfInterfacePortForSBI: "80"
   smfInterfaceHttp2PortForSBI: "9090"
@@ -64,17 +64,27 @@ config:
   dnsSecIpv4Address: "192.168.18.129"
   registerNrf: "yes"
   discoverUpf: "yes"
-  amfIpv4Address: "192.168.18.177"
+  useFqdnDns: "yes"
+  amfIpv4Address: "127.0.0.1"
   amfPort: "80"
   amfApiVersion: "v1"
+  amfFqdn: "oai-smf-svc"
   udmIpv4Address: "127.0.0.1"
   udmPort: "80"
   udmApiVersion: "v1"
-  nrfIpv4Address: "192.168.18.178"
+  udmFqdn: "localhost"
+  nrfIpv4Address: "127.0.0.1"
   nrfPort : "80"
   nrfApiVersion: "v1"
-  upfIpv4Address: "192.168.18.179"
-    
+  nrfFqdn: "oai-nrf-svc"
+  upfIpv4Address: "127.0.0.1"
+  upfFqdn0: "oai-spgwu-tiny-svc"
+
+persistence:
+  # make it true for the first time when you want to create persistance volume 
+  # and then false
+  enabled: false
+  
 resources: 
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little

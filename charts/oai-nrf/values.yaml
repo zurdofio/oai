@@ -9,7 +9,7 @@ namespace: "PROJECT"
 image:
   registry: local
   repository: image-registry.openshift-image-registry.svc:5000/PROJECT/oai-nrf
-  version: TAG
+  version: "TAG"
   # pullPolicy: IfNotPresent or Never or Always
   pullPolicy: Always
 
@@ -47,22 +47,20 @@ service:
 
 start:
   nrf: true
-  #tcpdump: true
+  tcpdump: true
 
 config:
   instance: "0"
   pidDirectory: "/var/run"
-  nrfInterfaceNameForSBI: "net1"
+  nrfInterfaceNameForSBI: "eth0"
   nrfInterfacePortForSBI: "80"
   nrfInterfaceHttp2PortForSBI: "9090"
   nrfApiVersion: "v1"
-  nrfIpNg: "192.168.18.178"
-  nrfNetmaskNg: "24"
 
 persistence:
   # make it true for the first time when you want to create persistance volume 
   # and then false
-  enabled: false
+  enabled: true
 
 resources: 
   # We usually recommend not to specify default resources and to leave this as a conscious
