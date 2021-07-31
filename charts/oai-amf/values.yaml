@@ -75,7 +75,7 @@ config:
   sst1: "1"
   sd1: "12"
   amfInterfaceNameForNGAP: "net1"
-  amfInterfaceNameForN11: "ens3"
+  amfInterfaceNameForN11: "eth0"
   smfInstanceId0: "1"
   smfIpv4Addr0: "0.0.0.0"
   smfHttpVersion0: "v1"
