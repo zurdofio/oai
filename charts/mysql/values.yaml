@@ -20,7 +20,7 @@ testFramework:
 
 ## Specify password for root user
 ##
-## Default: random 10 character string
+## Default: random 10 character string - New comment
 mysqlRootPassword: linux
 
 ## Create a database user
