@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mysql2
+  namespace: argocd
+spec:
+  source:
+    path: charts/mysql
+    repoURL: git@github.com:zurdofio/oai.git
+    targetRevision: HEAD
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  syncPolicy:
+   automated:
+     selfHeal: true
+     prune: true
+   syncOptions:
+   - CreateNamespace=true  
+  project: default
