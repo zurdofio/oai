@@ -1,8 +1,8 @@
 # mysql image version
 ## ref: https://hub.docker.com/r/library/mysql/tags/
 ##
-image: "image-registry.openshift-image-registry.svc:5000/oaicicd-tmp/mysql-internal"
-imageTag: "5.7.30"
+image: "mysql"
+imageTag: "5.6"
 
 strategy:
   type: Recreate
@@ -390,7 +390,7 @@ service:
   annotations: {}
   ## Specify a service type
   ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types
-  type: LoadBalancer
+  type: ClusterIP
   port: 3306
   # nodePort: 32000
   # loadBalancerIP:
